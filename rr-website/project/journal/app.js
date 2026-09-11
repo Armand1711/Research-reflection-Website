@@ -2,7 +2,7 @@
    app.js — render engine + interactions
    ============================================================ */
 (function () {
-  const J = window.JOURNAL;
+  let SEM = 1;
   const esc = (s) => String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const $ = (s, r = document) => r.querySelector(s);
@@ -21,7 +21,7 @@
   };
 
   /* ================= COVER ================= */
-  function cover(c) {
+  function cover(c, idp) {
     const tags = c.tags.map((t) =>
       `<span class="tag-pill reveal"><i style="background:var(--${t.c})"></i>${esc(t.k)}: <b>${esc(t.v)}</b></span>`).join("");
     return `<section class="section cover" id="cover" data-screen-label="Cover">
@@ -30,16 +30,16 @@
       <p class="author reveal rd2">${esc(c.author)}</p>
       <div class="cover__tags reveal rd2">${tags}</div>
       <p class="cover__intro reveal rd3">${esc(c.intro)}</p>
-      ${c.img ? `<div class="cover__img reveal rd3"><image-slot id="cover-img" shape="rounded" radius="8" placeholder="${esc(c.img)}"></image-slot></div>` : ""}
+      ${c.img ? `<div class="cover__img reveal rd3"><image-slot id="${idp || ""}cover-img" shape="rounded" radius="8" placeholder="${esc(c.img)}"></image-slot></div>` : ""}
     </section>`;
   }
 
   /* ================= BRIEF ================= */
-  function brief(b) {
+  function brief(b, secNum) {
     const todo = b.todo.map((t, i) =>
       `<div class="todo-item reveal"><span class="ix">${i + 1}</span><p>${esc(t)}</p></div>`).join("");
     return `<section class="section" id="brief" data-screen-label="The Brief">
-      <header class="s-head"><span class="kicker">Section 02</span><h2>The <em>Brief</em></h2></header>
+      <header class="s-head"><span class="kicker">Section ${secNum || "02"}</span><h2>The <em>Brief</em></h2></header>
       <div class="brief-grid">
         <div><h3 class="col-title reveal">What to do</h3>${todo}</div>
         <div>
@@ -73,7 +73,7 @@
     }
     return `<div class="block ${isRef ? "is-reflection" : ""}"><div class="blabel">${esc(bl.label)}</div>${inner}</div>`;
   }
-  function weeks(list) {
+  function weeks(list, secNum, label, idp) {
     const items = list.map((w) => {
       const rt = readingTime(w);
       const blocks = w.blocks.map(blockHTML).join("");
@@ -86,14 +86,14 @@
         </button>
         <div class="week__body"><div class="week__inner"><div class="week__pad">
           ${w.source ? `<div class="week__source">${esc(w.source)}</div>` : ""}
-          ${w.img ? `<div class="week__img"><image-slot id="wk-img-${w.n}" shape="rounded" radius="6" placeholder="${esc(w.img)}"></image-slot></div>` : ""}
+          ${w.img ? `<div class="week__img"><image-slot id="${idp || ""}wk-img-${w.n}" shape="rounded" radius="6" placeholder="${esc(w.img)}"></image-slot></div>` : ""}
           <div class="blocks">${blocks}</div>
         </div></div></div>
       </div>`;
     }).join("");
     return `<section class="section" id="weeks" data-screen-label="Weeks">
-      <header class="s-head"><span class="kicker">Section 03 · Weekly Gathering</span><h2>The <em>Weeks</em></h2>
-      <p class="s-sub">Twelve weeks of class notes, quotes and reflection. One opens at a time, so click any week to read it.</p></header>
+      <header class="s-head"><span class="kicker">Section ${secNum || "03"} · Weekly Gathering</span><h2>The <em>Weeks</em></h2>
+      <p class="s-sub">${esc(label || "Class notes, quotes and reflection. One opens at a time, so click any week to read it.")}</p></header>
       <div class="weeks">${items}</div>
     </section>`;
   }
@@ -161,7 +161,7 @@
   }
 
   /* ================= WALL ================= */
-  function wall(notes) {
+  function wall(notes, secNum) {
     const rots = [-2, 1.4, -1, 1.8, -1.5, 0.8, -2.1, 1.1, -0.7, 2, -1.3, 1.6, -1.8, 0.9];
     const cards = notes.map((n, i) =>
       `<div class="note cat-${n.cat} reveal" data-group="${n.group}" style="--rot:${rots[i % rots.length]}deg">
@@ -175,7 +175,7 @@
     ].map((f, i) =>
       `<button class="wall-filter ${i === 0 ? "active" : ""}" data-filter="${f.id}">${esc(f.l)}</button>`).join("");
     return `<section class="section" id="wall" data-screen-label="The Gathering Wall">
-      <header class="s-head"><span class="kicker">Section 08</span><h2>The Gathering <em>Wall</em></h2>
+      <header class="s-head"><span class="kicker">Section ${secNum || "08"}</span><h2>The Gathering <em>Wall</em></h2>
       <p class="s-sub">Every voice that shaped the work, pinned to one wall. Filter by kind, and hover any note to lift it.</p></header>
       <div class="wall-bar">${filters}</div>
       <div class="wall" id="wallGrid">${cards}</div>
@@ -183,7 +183,7 @@
   }
 
   /* ================= NAV ================= */
-  const NAV = [
+  const NAV_S1 = [
     { id: "cover", label: "Cover", icon: "cover" },
     { id: "brief", label: "The Brief", icon: "brief" },
     { id: "weeks", label: "The Weeks", icon: "weeks" },
@@ -193,8 +193,15 @@
     { id: "work", label: "My Work", icon: "work" },
     { id: "wall", label: "Gathering Wall", icon: "wall" },
   ];
+  const NAV_S2 = [
+    { id: "cover", label: "Cover", icon: "cover" },
+    { id: "brief", label: "The Brief", icon: "brief" },
+    { id: "weeks", label: "The Weeks", icon: "weeks" },
+    { id: "wall", label: "Gathering Wall", icon: "wall" },
+  ];
+  function currentNav() { return SEM === 2 ? NAV_S2 : NAV_S1; }
   function navHTML() {
-    const btns = NAV.map((n) =>
+    const btns = currentNav().map((n) =>
       `<button class="nav__btn" data-target="${n.id}" aria-label="${esc(n.label)}">
         <svg viewBox="0 0 24 24">${ICONS[n.icon]}</svg>
         <span class="tip">${esc(n.label)}</span>
@@ -205,19 +212,36 @@
         <circle class="fg" cx="21" cy="21" r="20" id="ring" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></svg>
       </div>
       <div class="nav__items">${btns}</div>
+      <div class="sem-switch">
+        <button class="sem-btn ${SEM === 1 ? "active" : ""}" data-sem="1">S1</button>
+        <button class="sem-btn ${SEM === 2 ? "active" : ""}" data-sem="2">S2</button>
+      </div>
     </nav>`;
   }
 
   /* ================= MOUNT ================= */
-  function render() {
+  function render(sem) {
+    SEM = sem || SEM;
+    const data = SEM === 2 ? window.JOURNAL2 : window.JOURNAL;
+    const oldNav = $(".nav");
+    if (oldNav) oldNav.remove();
     document.body.insertAdjacentHTML("afterbegin", navHTML());
     const app = $("#app");
-    app.innerHTML =
-      cover(J.cover) + brief(J.brief) + weeks(J.weeks) +
-      artist(J.artists[0], 1) + artist(J.artists[1], 2) +
-      synthesis(J.synthesis) + work(J.work) + wall(J.wall) +
-      `<footer class="foot"><div class="fm reveal">Collected, connected, curated.</div>
-       <div class="fmeta reveal rd1"><span>RR420 · Research &amp; Reflection</span><span>PGDip Interactive Development</span><span>Open Window · 2026</span></div></footer>`;
+    if (SEM === 2) {
+      app.innerHTML =
+        cover(data.cover, "s2-") + brief(data.brief, "02") +
+        weeks(data.weeks, "03", "Six of the eight available weeks so far. Week 04 has no recording available.", "s2-") +
+        wall(data.wall, "04") +
+        `<footer class="foot"><div class="fm reveal">Collected, connected, curated.</div>
+         <div class="fmeta reveal rd1"><span>RR420 · Research &amp; Reflection</span><span>PGDip Interactive Development</span><span>Open Window · 2026</span></div></footer>`;
+    } else {
+      app.innerHTML =
+        cover(data.cover) + brief(data.brief, "02") + weeks(data.weeks, "03") +
+        artist(data.artists[0], 1) + artist(data.artists[1], 2) +
+        synthesis(data.synthesis) + work(data.work) + wall(data.wall, "08") +
+        `<footer class="foot"><div class="fm reveal">Collected, connected, curated.</div>
+         <div class="fmeta reveal rd1"><span>RR420 · Research &amp; Reflection</span><span>PGDip Interactive Development</span><span>Open Window · 2026</span></div></footer>`;
+    }
 
     setupReveal();
     setupNav();
@@ -225,6 +249,15 @@
     setupFlip();
     setupWall();
     setupProgress();
+    setupSemSwitch();
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  }
+
+  function setupSemSwitch() {
+    $$(".sem-btn").forEach((b) => b.addEventListener("click", () => {
+      const target = Number(b.dataset.sem);
+      if (target !== SEM) render(target);
+    }));
   }
 
   function setupReveal() {
@@ -256,7 +289,7 @@
         if (e.isIntersecting) { btns.forEach((b) => b.classList.remove("active")); if (map[e.target.id]) map[e.target.id].classList.add("active"); }
       });
     }, { rootMargin: "-45% 0px -55% 0px" });
-    NAV.forEach((n) => { const el = document.getElementById(n.id); if (el) io.observe(el); });
+    currentNav().forEach((n) => { const el = document.getElementById(n.id); if (el) io.observe(el); });
   }
 
   function setupWeeks() {
@@ -265,11 +298,10 @@
       const body = $(".week__body", wk);
       if (!wk.classList.contains("open")) return;
       body.style.height = body.scrollHeight + "px";
-      void body.offsetHeight;            // reflow
+      void body.offsetHeight;
       body.style.height = "0px";
       wk.classList.remove("open");
       $(".week__head", wk).setAttribute("aria-expanded", "false");
-      // Guaranteed collapsed end-state even if the height transition stalls
       setTimeout(() => {
         if (!wk.classList.contains("open")) {
           body.style.transition = "none";
@@ -288,7 +320,6 @@
       const settle = () => { if (wk.classList.contains("open")) body.style.height = "auto"; };
       const onEnd = (e) => { if (e.target === body && e.propertyName === "height") { settle(); body.removeEventListener("transitionend", onEnd); } };
       body.addEventListener("transitionend", onEnd);
-      // Guaranteed end-state even if the transition never advances (non-compositing stall)
       setTimeout(settle, 500);
     }
     weeks.forEach((wk) => {
@@ -331,6 +362,7 @@
     update();
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", render);
-  else render();
+  const start = () => render(1);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();
