@@ -170,6 +170,35 @@ window.JOURNAL2 = {
     },
   ],
 
+  report: {
+    themes: [
+      { k: "Evidence 1", title: "Masonic Temple puzzle experience", hue: "amber", slot: "s2-report-masonic",
+        rows: [
+          { k: "Aim", v: "Interactive web puzzle exploring Masonic symbolism and ritual, built for Union Lodge No. 1 Kimberley, in vanilla JS and GSAP." },
+          { k: "Status", v: "Information architecture and interaction flow largely worked out; this is the earlier of the two practical pieces, so it anchors the start of the year's timeline in the Research Report." },
+          { k: "Connects to", v: "Chen's principle that a design is complete when nothing more can be removed — the ritual feel depends on what the interface withholds, not what it shows." },
+        ]},
+      { k: "Evidence 2", title: "Lulama / CHOSA AI avatar", hue: "teal", slot: "s2-report-lulama",
+        rows: [
+          { k: "Aim", v: "AI identity proxy for CHOSA — a fictional donor-facing guide taking people through Connection, Revelation, and The Ask. Built with Three.js and the Claude API." },
+          { k: "Status", v: "Core avatar behaviour (blinking, idle movement, mouth animation) and the API integration are working; this is the more recent practical piece, showing where the year's thinking has moved to." },
+          { k: "Connects to", v: "McCarthy's question of a machine performing human presence, mirrored: LAUREN is a human performing as AI, Lulama is an AI performing as human." },
+        ]},
+      { k: "Evidence 3", title: "The RR420 journal site itself", hue: "blue", slot: "s2-report-journal",
+        rows: [
+          { k: "Aim", v: "The Semester 1 and Semester 2 interactive journal (this site) is itself direct evidence of gleaning, gathering, and connecting ideas across the year, not just a container for other evidence." },
+          { k: "Status", v: "Semester 1 section complete (Cover, Brief, Weeks, Artists, Synthesis, My Work, Gathering Wall). Semester 2 section in progress: weekly notes for six of eight weeks, plus a fresh Gathering Wall." },
+          { k: "Connects to", v: "Shows the planning and structuring work — deciding how the final Research Report text should be laid out — that the brief asks the journal to evidence." },
+        ]},
+      { k: "Evidence 4", title: "Manifesto (in progress)", hue: "coral", slot: "s2-report-manifesto",
+        rows: [
+          { k: "Aim", v: "Statement of intent connecting technical and conceptual interests to Chen and McCarthy, given form as its own interactive site (\"Manifest No. 001\")." },
+          { k: "Status", v: "Text drafted and revised against the brief's rubric; interactive site built as a first pass. Still to do: lock final copy, connect explicitly back into the Research Report's own argument." },
+          { k: "Connects to", v: "The brief requires the Research Report to connect to the Manifesto — this piece is the planning link between the two final texts." },
+        ]},
+    ],
+  },
+
   wall: [
     { cat: "class", group: "quotes", t: "The Red Hand Files began in September of 2018 as a simple idea, a place where I would answer questions from my fans.", a: "Nick Cave" },
     { cat: "class", group: "quotes", t: "Your work is only as good as your research.", a: "Every Frame a Painting, postmortem" },

@@ -143,8 +143,14 @@
     </section>`;
   }
 
-  /* ================= MY WORK ================= */
-  function work(w) {
+  /* ================= MY WORK / RESEARCH REPORT PROGRESS ================= */
+  function work(w, opts) {
+    opts = opts || {};
+    const id = opts.id || "work";
+    const secNum = opts.secNum || "07";
+    const kicker = opts.kicker || "Section " + secNum;
+    const title = opts.title || 'My Practical <em>Work</em>';
+    const sub = opts.sub || "";
     const themes = w.themes.map((t) => {
       const rows = t.rows.map((r) =>
         `<div class="theme__row"><div class="rk">${esc(r.k)}</div><div class="rv">${esc(r.v)}</div></div>`).join("");
@@ -154,8 +160,9 @@
         ${rows}
       </div>`;
     }).join("");
-    return `<section class="section" id="work" data-screen-label="My Work">
-      <header class="s-head"><span class="kicker">Section 07</span><h2>My Practical <em>Work</em></h2></header>
+    return `<section class="section" id="${id}" data-screen-label="${opts.navLabel || 'My Work'}">
+      <header class="s-head"><span class="kicker">${esc(kicker)}</span><h2>${title}</h2>
+      ${sub ? `<p class="s-sub">${esc(sub)}</p>` : ""}</header>
       <div class="themes">${themes}</div>
     </section>`;
   }
@@ -197,6 +204,7 @@
     { id: "cover", label: "Cover", icon: "cover" },
     { id: "brief", label: "The Brief", icon: "brief" },
     { id: "weeks", label: "The Weeks", icon: "weeks" },
+    { id: "report", label: "Research Report — Progress", icon: "work" },
     { id: "wall", label: "Gathering Wall", icon: "wall" },
   ];
   function currentNav() { return SEM === 2 ? NAV_S2 : NAV_S1; }
@@ -231,14 +239,16 @@
       app.innerHTML =
         cover(data.cover, "s2-") + brief(data.brief, "02") +
         weeks(data.weeks, "03", "Six of the eight available weeks so far. Week 04 has no recording available.", "s2-") +
-        wall(data.wall, "04") +
+        work(data.report, { id: "report", secNum: "04", title: 'Research Report — <em>Progress</em>', navLabel: "Research Report — Progress",
+          sub: "Week 9 in-class progress mark (5%). Emphasis is on progress, not completion: ideation, planning, and evidence gathered so far." }) +
+        wall(data.wall, "05") +
         `<footer class="foot"><div class="fm reveal">Collected, connected, curated.</div>
          <div class="fmeta reveal rd1"><span>RR420 · Research &amp; Reflection</span><span>PGDip Interactive Development</span><span>Open Window · 2026</span></div></footer>`;
     } else {
       app.innerHTML =
         cover(data.cover) + brief(data.brief, "02") + weeks(data.weeks, "03") +
         artist(data.artists[0], 1) + artist(data.artists[1], 2) +
-        synthesis(data.synthesis) + work(data.work) + wall(data.wall, "08") +
+        synthesis(data.synthesis) + work(data.work, { id: "work", secNum: "07", title: 'My Practical <em>Work</em>', navLabel: "My Work" }) + wall(data.wall, "08") +
         `<footer class="foot"><div class="fm reveal">Collected, connected, curated.</div>
          <div class="fmeta reveal rd1"><span>RR420 · Research &amp; Reflection</span><span>PGDip Interactive Development</span><span>Open Window · 2026</span></div></footer>`;
     }
