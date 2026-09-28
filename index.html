@@ -406,7 +406,7 @@
 <div class="pop" id="settings" role="dialog" aria-label="Settings">
   <div class="pop__title">Settings</div>
   <button class="pop__item" role="switch" aria-checked="false" data-pref="sound"><span>Navigation sounds</span><i class="sw"></i></button>
-  <button class="pop__item" role="switch" aria-checked="false" data-pref="music"><span>Sign-in music</span><i class="sw"></i></button>
+  <button class="pop__item" role="switch" aria-checked="false" data-pref="music"><span>Music</span><i class="sw"></i></button>
   <button class="pop__item" role="switch" aria-checked="false" data-pref="rm"><span>Reduce motion</span><i class="sw"></i></button>
   <button class="pop__item" type="button" id="btn-switch"><span>Switch user</span></button>
   <div class="pop__title" id="pad-status">Controller: none detected. Plug one in and press any button.</div>
@@ -616,7 +616,10 @@
     home: function () { snd("home"); },
     logout: function () { snd("logout"); }
   };
-  function music(on) { if (window.RRSound) { if (on) window.RRSound.startMusic(); else window.RRSound.stopMusic(); } }
+  /* music: "signin" on the Who's viewing? screen, "home" on the home screen, null to fade out */
+  function music(name, ms) { if (window.RRSound) { if (name) window.RRSound.startMusic(name); else window.RRSound.stopMusic(ms); } }
+  var leaving = false;
+  function homeMusic() { if (!authOpen && !leaving && S.prefs.music && !window.RRSound.musicPlaying("home")) music("home"); }
 
   /* ============ build ============ */
   function buildBackgrounds() {
@@ -713,7 +716,7 @@
 
   /* ============ launch: tile grows to fill the screen ============ */
   function launch(url, tileEl) {
-    sfx.select();
+    sfx.select(); leaving = true; music(null, 450);
     try { sessionStorage.setItem("rr420.launch", "1"); } catch (e) {}
     if (quick()) { location.href = url; return; }
     var r = tileEl.getBoundingClientRect();
@@ -727,7 +730,7 @@
     requestAnimationFrame(function () { o.classList.add("go"); });
     setTimeout(function () { location.href = url; }, 560);
   }
-  window.addEventListener("pageshow", function () { $$(".launch").forEach(function (n) { n.remove(); }); refreshStats(); });
+  window.addEventListener("pageshow", function () { $$(".launch").forEach(function (n) { n.remove(); }); refreshStats(); leaving = false; if (currentUser()) homeMusic(); });
   document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshStats(); });
 
   /* ============ options menu ============ */
@@ -768,7 +771,7 @@
     b.addEventListener("click", function () {
       var k = b.dataset.pref; S.prefs[k] = !S.prefs[k]; save(k, S.prefs[k] ? "1" : "0"); applyPrefs();
       if (k === "sound" && S.prefs.sound) sfx.select();
-      if (k === "music" && !S.prefs.music) music(false);
+      if (k === "music") { if (S.prefs.music) homeMusic(); else music(null); }
     });
   });
   document.addEventListener("click", function (e) {
@@ -992,7 +995,7 @@
     $$(".prof", authEl).forEach(function (b) { b.classList.remove("chosen"); });
     $("#auth-title").textContent = "Welcome back to Research & Reflection"; $("#auth-sub").textContent = "Who's viewing?";
     stageEl.inert = true; stageEl.classList.remove("stage-enter");
-    closeSettings(); startBokeh(); music(true);
+    closeSettings(); startBokeh(); music("signin");
     if (opts.boot && !quick()) {
       authPhase = "boot"; authEl.classList.add("is-boot"); authEl.classList.remove("is-login");
       clearTimeout(bootTimer); bootTimer = setTimeout(toLogin, 3200);
@@ -1005,7 +1008,7 @@
   }
   function chooseUser(u) {
     if (authPhase !== "login") return;
-    authPhase = "done"; sfx.select(); music(false);
+    authPhase = "done"; sfx.select(); music(null);
     if (RR) RR.setUser(u);
     authEl.classList.add("picking");
     var b = $('.prof[data-user="' + u + '"]', authEl); if (b) b.classList.add("chosen");
@@ -1014,7 +1017,7 @@
     setTimeout(finishAuth, 1000);
   }
   function finishAuth() {
-    paintUser(); refreshStats(); sfx.home();
+    paintUser(); refreshStats(); sfx.home(); music("home");
     stageEl.inert = false; stageEl.classList.add("stage-enter");
     enterHome(true);
     authEl.classList.add("out");
@@ -1022,7 +1025,7 @@
   }
   function authKey(e) {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
-    if (authPhase !== "done") music(true);   // browsers only start audio after a key or click
+    if (authPhase !== "done") music("signin");   // browsers only start audio after a key or click
     if (authPhase === "boot") { if (e.key !== "Shift" && e.key !== "Tab") { e.preventDefault(); toLogin(); } return; }
     if (authPhase !== "login") { e.preventDefault(); return; }
     var items = $$(".prof, .auth__power", authEl), i = items.indexOf(document.activeElement);
@@ -1035,7 +1038,7 @@
     else if (e.key === "Tab") { e.preventDefault(); items[(i + (e.shiftKey ? -1 : 1) + items.length) % items.length].focus(); }
   }
   function authInput(a) {
-    if (authPhase !== "done") music(true);
+    if (authPhase !== "done") music("signin");
     if (authPhase === "boot") return toLogin();
     if (authPhase !== "login") return;
     var profs = $$(".prof", authEl), k = profs.indexOf(document.activeElement);
@@ -1049,7 +1052,7 @@
   $("#add-user").addEventListener("click", function () { var el = this; el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge"); });
   $("#auth-restart").addEventListener("click", function () { sfx.logout(); showAuth({ boot: true }); });
   authEl.addEventListener("click", function (e) { if (authPhase === "boot") toLogin(); });
-  authEl.addEventListener("pointerdown", function () { if (authPhase !== "done") music(true); });
+  authEl.addEventListener("pointerdown", function () { if (authPhase !== "done") music("signin"); });
   $("#btn-switch").addEventListener("click", function () { sfx.logout(); showAuth({ boot: false }); });
 
   /* Boot mark: drop your own logo at rr-website/project/assets/boot-logo.svg (or .png) and it replaces the "A" automatically.
@@ -1074,8 +1077,9 @@
   applyPrefs();
   buildBackgrounds(); buildRow(); buildTrophyCard(); buildGameViews();
   paintUser();
-  if (currentUser()) { refreshStats(); stageEl.classList.add("stage-enter"); enterHome(true); }
+  if (currentUser()) { refreshStats(); stageEl.classList.add("stage-enter"); enterHome(true); homeMusic(); }
   else { showAuth({ boot: true }); }
+  ["keydown", "pointerdown"].forEach(function (t) { document.addEventListener(t, function () { if (currentUser()) homeMusic(); }, true); });
 })();
 </script>
 </body>
