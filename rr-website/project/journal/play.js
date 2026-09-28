@@ -349,7 +349,7 @@
     box.addEventListener("click", function (e) {
       var b = e.target.closest("[data-go]"); if (!b) return;
       var g = b.dataset.go;
-      if (g === "next") step(1); else if (g === "hub") openHub(true); else location.href = "../../index.html#s" + SEM;
+      if (g === "next") step(1); else if (g === "hub") openHub(true); else if (G().quit) G().quit(); else location.href = "../../index.html#s" + SEM;
     });
     c.sec.appendChild(box);
   }
