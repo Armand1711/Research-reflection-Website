@@ -7,7 +7,7 @@
 <title>Research &amp; Reflection · RR420 · Armand</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --u: min(1.05vw, 1.9vh);
@@ -203,6 +203,8 @@
   .trow p{ margin:.15em 0 0; font-size:max(13px, calc(var(--u)*1.12)); color:var(--dim); line-height:1.45; }
   .trow small{ font-size:max(12px, calc(var(--u)*1)); color:var(--dim); white-space:nowrap; }
   .trow.done small{ color:#7fe0a8; }
+  .tgroup{ display:flex; justify-content:space-between; align-items:baseline; margin:calc(var(--u)*2.2) 0 calc(var(--u)*.7); font:400 calc(var(--u)*1.9)/1.2 var(--serif); }
+  .tgroup small{ font:400 max(12px, calc(var(--u)*1)) Inter, system-ui, sans-serif; color:var(--dim); }
   .thead{ display:flex; gap:calc(var(--u)*2.4); flex-wrap:wrap; margin-bottom:calc(var(--u)*.6); font-size:1.15em; }
 
   /* ---------- launch (tile expands to full screen) ---------- */
@@ -210,6 +212,66 @@
     transition:left .55s var(--ease), top .55s var(--ease), width .55s var(--ease), height .55s var(--ease), border-radius .55s var(--ease); }
   .launch svg{ width:100%; height:100%; display:block; }
   .launch.go{ left:0 !important; top:0 !important; width:100vw !important; height:100vh !important; border-radius:0; }
+
+
+  /* ---------- boot + sign-in ---------- */
+  .auth{ position:fixed; inset:0; z-index:200; color:#fff; overflow:hidden;
+    background:linear-gradient(120deg,#1b1518 0%,#0e0f1b 52%,#070915 100%); transition:opacity .7s ease; }
+  .auth[hidden]{ display:none; }
+  .auth.out{ opacity:0; pointer-events:none; }
+  .auth canvas{ position:absolute; inset:0; width:100%; height:100%; }
+  .auth__beam{ position:absolute; inset:0; pointer-events:none; opacity:.9; transition:opacity 1.4s ease;
+    background:radial-gradient(ellipse 34% 72% at 21% -10%, rgba(255,233,212,.44), rgba(255,233,212,.09) 55%, transparent 76%); }
+  .auth.is-boot .auth__beam{ opacity:.25; }
+  .auth__boot{ position:absolute; inset:0; display:grid; place-content:center; justify-items:center; gap:calc(var(--u)*1.8); opacity:0; visibility:hidden; transition:opacity .7s ease, visibility 0s .7s; }
+  .auth.is-boot .auth__boot{ opacity:1; visibility:visible; transition:opacity .6s ease; }
+  .auth__logo{ width:calc(var(--u)*10); height:calc(var(--u)*10); border-radius:50%; background:#fff; color:#0a0a14; display:grid; place-items:center;
+    font:400 calc(var(--u)*5.6)/1 var(--serif); padding-bottom:.06em; box-shadow:0 0 calc(var(--u)*7) rgba(255,255,255,.2); }
+  .auth.is-boot .auth__logo{ animation:logoIn 1.5s var(--ease) .35s backwards; }
+  @keyframes logoIn{ from{ opacity:0; transform:scale(.8); } }
+  .auth__logo img{ width:60%; height:60%; object-fit:contain; display:block; }
+  .auth__boot p{ margin:0; font-size:calc(var(--u)*1.3); letter-spacing:.06em; color:rgba(255,255,255,.62); font-weight:300; }
+  .auth.is-boot .auth__boot p{ animation:logoIn 1.2s ease 1.3s backwards; }
+  .auth__login{ position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .7s ease, visibility 0s .7s; }
+  .auth.is-login .auth__login{ opacity:1; visibility:visible; transition:opacity .8s ease .1s; }
+  #auth-clock{ position:absolute; top:calc(var(--u)*3); right:calc(var(--u)*4.2); font-size:calc(var(--u)*1.75); font-weight:400; font-variant-numeric:tabular-nums; }
+  .auth__head{ position:absolute; top:19vh; left:0; right:0; text-align:center; padding:0 5vw; }
+  .auth__head h1{ margin:0; font:300 clamp(26px, calc(var(--u)*3.3), 62px)/1.2 Inter, system-ui, sans-serif; letter-spacing:.005em; transition:opacity .35s; }
+  .auth__head p{ margin:calc(var(--u)*1.3) 0 0; font-size:calc(var(--u)*1.4); color:rgba(255,255,255,.62); font-weight:300; transition:opacity .35s; }
+  .auth__profiles{ position:absolute; top:37vh; left:0; right:0; display:flex; justify-content:center; align-items:flex-start; gap:calc(var(--u)*6); }
+  .prof{ background:none; border:0; padding:0; color:inherit; width:calc(var(--u)*17); display:flex; flex-direction:column; align-items:center; gap:calc(var(--u)*1.3);
+    opacity:.78; transition:opacity .35s, transform .6s var(--ease); }
+  .prof:focus{ outline:none; opacity:1; }
+  .prof__pad{ height:calc(var(--u)*2.6); display:grid; place-items:center; opacity:0; transition:opacity .3s; }
+  .prof:focus .prof__pad{ opacity:1; }
+  .prof__pad svg{ width:calc(var(--u)*2.6); height:calc(var(--u)*2.6); fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .prof__pad i{ position:absolute; margin-top:calc(var(--u)*-2.4); font:500 calc(var(--u)*.85)/1 Inter, sans-serif; font-style:normal; }
+  .prof__av{ position:relative; margin-bottom:calc(var(--u)*.9); width:calc(var(--u)*11.5); height:calc(var(--u)*11.5); border-radius:50%; display:grid; place-items:center; color:#fff;
+    transition:transform .6s var(--ease); }
+  .prof__av::after{ content:""; position:absolute; inset:calc(var(--u)*-.85); border-radius:50%; border:1.5px solid rgba(255,255,255,.82); opacity:0; transform:scale(.93); transition:opacity .35s, transform .6s var(--ease); }
+  .prof:focus .prof__av{ transform:scale(1.04); }
+  .prof:focus .prof__av::after{ opacity:1; transform:none; }
+  .prof--armand .prof__av{ background:linear-gradient(135deg,#d4883a,#c9683f); }
+  .prof--armand .prof__av em{ font:400 calc(var(--u)*6.2)/1 var(--serif); font-style:normal; padding-bottom:.05em; }
+  .prof--add .prof__av{ background:rgba(255,255,255,.12); }
+  .prof--add .prof__av svg{ width:34%; height:34%; fill:none; stroke:#fff; stroke-width:2.2; stroke-linecap:round; }
+  .prof--add.nudge .prof__av{ animation:nudge .3s ease; }
+  @keyframes nudge{ 30%{ transform:scale(.96); } 60%{ transform:scale(1.06); } }
+  .prof b{ font-weight:400; font-size:calc(var(--u)*1.55); }
+  .prof small{ font-size:calc(var(--u)*1.05); color:rgba(255,255,255,.58); opacity:0; transition:opacity .35s; }
+  .prof:focus small{ opacity:1; }
+  .auth.picking .prof:not(.chosen){ opacity:0; transform:translateY(10px); }
+  .auth.picking .prof.chosen .prof__av{ transform:scale(1.1); }
+  .auth.picking .prof.chosen small, .auth.picking .prof.chosen .prof__pad{ opacity:0; }
+  .auth__power{ position:absolute; bottom:calc(var(--u)*3.4); left:50%; transform:translateX(-50%); width:calc(var(--u)*3.8); height:calc(var(--u)*3.8); border-radius:50%;
+    background:rgba(255,255,255,.1); border:0; color:#fff; display:grid; place-items:center; transition:background .2s, color .2s, transform .3s var(--ease); }
+  .auth__power svg{ width:48%; height:48%; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; }
+  .auth__power:hover{ background:rgba(255,255,255,.2); }
+  .auth__power:focus{ outline:none; background:#fff; color:#0b0c1a; transform:translateX(-50%) scale(1.08); }
+  .auth__hint{ position:absolute; right:calc(var(--u)*4.2); bottom:calc(var(--u)*3.4); display:flex; align-items:center; gap:.7em; font-size:calc(var(--u)*1.3); color:rgba(255,255,255,.82); }
+  .auth__hint i{ width:1.9em; height:1.9em; border-radius:50%; border:1.5px solid currentColor; display:grid; place-items:center; font-style:normal; font-size:.75em; }
+  .stage-enter .topbar, .stage-enter .row{ animation:stageIn .9s var(--ease) both; }
+  @keyframes stageIn{ from{ opacity:0; transform:translateY(-14px); } }
 
   /* ---------- reduced motion ---------- */
   .rm *, .rm *::before, .rm *::after{ animation:none !important; transition-duration:.01s !important; transition-delay:0s !important; }
@@ -249,6 +311,13 @@
     .trow svg{ width:28px; height:28px; }
     .pop{ min-width:240px; } #settings{ top:56px; right:12px; }
     .bg .drift{ animation:none; }
+    .auth__head{ top:15vh; } .auth__head h1{ font-size:27px; } .auth__head p{ font-size:15px; }
+    .auth__profiles{ top:34vh; gap:22px; }
+    .prof{ width:132px; gap:12px; } .prof__av{ width:100px; height:100px; } .prof--armand .prof__av em{ font-size:54px; }
+    .prof__pad,.prof__pad svg{ height:24px; width:24px; } .prof b{ font-size:17px; } .prof small{ font-size:12px; }
+    .auth__logo{ width:84px; height:84px; font-size:48px; } .auth__boot p{ font-size:14px; }
+    #auth-clock{ top:22px; right:18px; font-size:15px; } .auth__hint{ display:none; }
+    .auth__power{ width:44px; height:44px; bottom:30px; }
   }
 </style>
 </head>
@@ -303,6 +372,31 @@
   </main>
 </div>
 
+
+<div class="auth" id="auth" role="dialog" aria-label="Sign in" hidden>
+  <canvas id="bokeh" aria-hidden="true"></canvas>
+  <div class="auth__beam" aria-hidden="true"></div>
+  <div class="auth__boot" aria-hidden="true"><div class="auth__logo" id="boot-logo">A</div><p>Research &amp; Reflection</p></div>
+  <div class="auth__login">
+    <time id="auth-clock"></time>
+    <div class="auth__head"><h1 id="auth-title">Welcome back to Research &amp; Reflection</h1><p id="auth-sub">Who's viewing?</p></div>
+    <div class="auth__profiles">
+      <button class="prof prof--add" type="button" id="add-user" aria-disabled="true" aria-label="Add User (not available)">
+        <span class="prof__pad" aria-hidden="true"></span>
+        <span class="prof__av"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        <b>Add User</b>
+      </button>
+      <button class="prof prof--armand" type="button" data-user="armand">
+        <span class="prof__pad" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 3.8 5.2l-1 3.2a2.2 2.2 0 0 1-3.6.9L14.5 15h-5l-1.7 2.3a2.2 2.2 0 0 1-3.6-.9l-1-3.2A4 4 0 0 1 7 8z"/></svg></span>
+        <span class="prof__av"><em>A</em></span>
+        <b>Armand</b><small>Progress is saved</small>
+      </button>
+    </div>
+    <button class="auth__power" type="button" id="auth-restart" aria-label="Restart"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 6.9a8 8 0 1 0 11.4 0"/></svg></button>
+    <div class="auth__hint" aria-hidden="true"><i>&#10005;</i> Select</div>
+  </div>
+</div>
+
 <div class="hint" aria-hidden="true">
   <span><kbd>&larr;</kbd><kbd>&rarr;</kbd> Move</span>
   <span><kbd>Enter</kbd> Select</span>
@@ -313,6 +407,7 @@
   <div class="pop__title">Settings</div>
   <button class="pop__item" role="switch" aria-checked="false" data-pref="sound"><span>Navigation sounds</span><i class="sw"></i></button>
   <button class="pop__item" role="switch" aria-checked="false" data-pref="rm"><span>Reduce motion</span><i class="sw"></i></button>
+  <button class="pop__item" type="button" id="btn-switch"><span>Switch user</span></button>
   <div class="pop__title" id="pad-status">Controller: none detected. Plug one in and press any button.</div>
 </div>
 <div class="pop" id="menu" role="menu" aria-label="Options"></div>
@@ -334,6 +429,7 @@
 
 <script src="rr-website/project/journal/content.js"></script>
 <script src="rr-website/project/journal/content2.js"></script>
+<script src="rr-website/project/journal/trophies.js"></script>
 <script>
 (function () {
   "use strict";
@@ -370,44 +466,52 @@
   };
   var ORDER = ["who", "stack", "intent", "influences", "outside"];
 
-  /* ============ trophies (edit freely) ============ */
-  var TROPHIES = [
-    { g: "platinum", name: "The Whole Year", desc: "Present the finished Research Report (Week 15).", state: "locked" },
-    { g: "gold", name: "Research Report", desc: "Progress mark presented in Week 9. The report itself is in progress.", state: "progress" },
-    { g: "gold", name: "Engine Swap", desc: "Drop a 3.5-litre V8 into a 1991 Defender 110.", state: "progress" },
-    { g: "silver", name: "Lulama", desc: "Built a 3D AI avatar with Three.js and the Claude API for CHOSA.", state: "done" },
-    { g: "silver", name: "The Ritual Room", desc: "Built the Masonic Temple puzzle experience for Union Lodge No. 1 Kimberley.", state: "done" },
-    { g: "bronze", name: "Founder", desc: "Co-founded Stack Studio.", state: "done" },
-    { g: "bronze", name: "Gatherer", desc: "Shipped the Semester 1 journal.", state: "done" },
-    { g: "bronze", name: "Statement of Intent", desc: "Wrote this manifesto.", state: "done" },
-    { g: "bronze", name: "Second Semester", desc: "Semester 2 journal: six of eight weeks logged so far.", state: "progress" }
-  ];
+  /* ============ trophies: year milestones + the two journal games ============ */
+  var RR = window.RR;
+  var TROPHIES = RR ? RR.year : [];
   var TROPHY_SVG = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3 3 0 0 0 7 10.5M17 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 14v3.5M8.5 20h7M9.5 17.5h5"/></svg>';
   var GRADES = ["platinum", "gold", "silver", "bronze"];
+  var RANK = { platinum: 0, gold: 1, silver: 2, bronze: 3 };
   function trophyCounts() {
-    var c = { platinum: 0, gold: 0, silver: 0, bronze: 0 }, done = 0;
-    TROPHIES.forEach(function (t) { if (t.state === "done") { c[t.g]++; done++; } });
-    return { c: c, done: done, total: TROPHIES.length, pct: Math.round(done / TROPHIES.length * 100) };
+    var c = { platinum: 0, gold: 0, silver: 0, bronze: 0 }, done = 0, total = 0;
+    TROPHIES.forEach(function (t) { total++; if (t.state === "done") { c[t.g]++; done++; } });
+    if (RR) ["s1", "s2"].forEach(function (k) {
+      var p = RR.progress(k); total += p.total; done += p.earned;
+      GRADES.forEach(function (g) { c[g] += p.counts[g]; });
+    });
+    return { c: c, done: done, total: total, pct: total ? Math.round(done / total * 100) : 0 };
   }
-  function gradeRow(t) { return GRADES.map(function (g) { return '<span class="g-' + g + '">' + TROPHY_SVG + t.c[g] + "</span>"; }).join(""); }
+  function gradeRow(c) { return GRADES.map(function (g) { return '<span class="g-' + g + '">' + TROPHY_SVG + c[g] + "</span>"; }).join(""); }
   function buildTrophyCard() {
     var t = trophyCounts();
     $("#card-trophies").innerHTML =
       '<span class="card__k">' + TROPHY_SVG + 'Trophies<em>' + t.done + " of " + t.total + '</em></span>' +
-      '<div class="tro">' + gradeRow(t) + "</div>" +
+      '<div class="tro">' + gradeRow(t.c) + "</div>" +
       '<div class="mini"><i style="width:' + t.pct + '%"></i></div>';
+  }
+  function trow(g, name, desc, state, small) {
+    return '<div class="trow ' + (state === "done" ? "done" : state === "locked" ? "locked" : "") + '"><span class="g-' + g + '">' + TROPHY_SVG + "</span><div><h4>" + name + "</h4><p>" + desc + "</p></div><small>" + small + "</small></div>";
   }
   function trophySheet() {
     var t = trophyCounts();
-    var order = { done: 0, progress: 1, locked: 2 };
-    var list = TROPHIES.slice().sort(function (a, b) { return order[a.state] - order[b.state]; });
     var label = { done: "Unlocked", progress: "In progress", locked: "Locked" };
-    return { tag: "Trophies · " + t.pct + "% complete", title: "Trophies", html:
-      "<p>The year so far, kept the way a console keeps it. Unlocked means done; in progress means started and not finished.</p>" +
-      '<div class="thead tro">' + gradeRow(t) + "</div>" +
-      '<div class="tlist">' + list.map(function (x) {
-        return '<div class="trow ' + (x.state === "done" ? "done" : x.state === "locked" ? "locked" : "") + '"><span class="g-' + x.g + '">' + TROPHY_SVG + "</span><div><h4>" + x.name + "</h4><p>" + x.desc + "</p></div><small>" + label[x.state] + "</small></div>";
-      }).join("") + "</div>" };
+    var order = { done: 0, progress: 1, locked: 2 };
+    var html = "<p>Every trophy across the site, kept the way a console keeps them. The year milestones are mine to update; the two journals award their own as you read, collect and explore.</p>" +
+      '<div class="thead tro">' + gradeRow(t.c) + "</div>";
+    var yr = TROPHIES.slice().sort(function (a, b) { return order[a.state] - order[b.state]; });
+    var yd = TROPHIES.filter(function (x) { return x.state === "done"; }).length;
+    html += '<h3 class="tgroup">Year milestones<small>' + yd + " of " + TROPHIES.length + '</small></h3><div class="tlist">' +
+      yr.map(function (x) { return trow(x.g, x.name, x.desc, x.state, label[x.state]); }).join("") + "</div>";
+    if (RR) [["s1", "Semester 1 journal"], ["s2", "Semester 2 journal"]].forEach(function (pair) {
+      var k = pair[0], p = RR.progress(k), st = RR.load(k);
+      var list = RR.defs[k].map(function (d, i) { return { d: d, i: i }; }).sort(function (a, b) { return RANK[a.d.g] - RANK[b.d.g] || a.i - b.i; });
+      html += '<h3 class="tgroup">' + pair[1] + "<small>" + p.earned + " of " + p.total + '</small></h3><div class="tlist">' +
+        list.map(function (x) {
+          var d = x.d, got = st.earned[d.id], hide = d.hidden && !got;
+          return trow(d.g, hide ? "Hidden trophy" : d.name, hide ? "Keep exploring." : d.desc, got ? "done" : "locked", got ? "Unlocked" : "Locked");
+        }).join("") + "</div>";
+    });
+    return { tag: "Trophies · " + t.pct + "% complete", title: "Trophies", html: html };
   }
 
   /* ============ artwork ============ */
@@ -476,8 +580,7 @@
       menu: [["Open the journal", ""], ["Go to My Work", "#work"], ["Go to the Gathering Wall", "#wall"]],
       stats: function () {
         if (!J1) return null;
-        return { a: ["Weeks logged", J1.weeks.length], b: ["Wall notes", J1.wall.length], pct: 100,
-          chips: [J1.artists.length + " artists", J1.work.themes.length + " practical themes", J1.synthesis.threads.length + " synthesis threads"] };
+        return { chips: [J1.weeks.length + " weekly entries", J1.wall.length + " wall notes", J1.artists.length + " artists", J1.synthesis.threads.length + " synthesis cards"] };
       } },
     { id: "s2", label: "Semester 2", accent: "#1d9e75", url: JOURNAL_URL + "?sem=2", sem: "Semester 2", title: "Journal Development Project",
       desc: "Writing about my own practice: weekly notes on manifestos, discourse and presenting ideas, plus Research Report progress.",
@@ -485,8 +588,7 @@
       stats: function () {
         if (!J2) return null;
         var d = s2WeeksDone();
-        return { a: ["Weeks logged", d + " / 8"], b: ["Wall notes", J2.wall.length], pct: Math.round(d / 8 * 100),
-          chips: [J2.report.themes.length + " report evidence cards", "Week 9 progress mark"] };
+        return { chips: [d + " of 8 weeks logged", J2.wall.length + " wall notes", J2.report.themes.length + " evidence cards"] };
       } }
   ];
   var S = { idx: 0, sheet: null, sheetOrigin: null, menuFor: null, prefs: { sound: false, rm: false } };
@@ -556,12 +658,31 @@
           '<div class="actions rise" style="--i:3"><button class="btn-main" data-first data-open>View journal</button>' +
           '<button class="btn-round" data-more aria-label="More options" aria-haspopup="menu"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>' +
         "</div>" +
-        (st ? '<div class="prog rise" style="--i:4"><div class="prog__top"><div class="stat"><span>' + st.a[0] + "</span><b>" + st.a[1] + '</b></div><div class="stat"><span>' + st.b[0] + "</span><b>" + st.b[1] + "</b></div></div>" +
-          '<div class="prog__bar" style="--w:' + st.pct + '%"><i></i></div><div class="chips">' + st.chips.map(function (c) { return '<span class="chip">' + c + "</span>"; }).join("") + "</div></div>" : "");
+        '<div class="prog rise" style="--i:4"></div>';
       host.appendChild(v);
+      refreshOne(it, v);
       $("[data-open]", v).addEventListener("click", function () { launch(it.url, $$(".tile")[i]); });
       $("[data-more]", v).addEventListener("click", function (e) { openMenu(it, e.currentTarget); });
     });
+  }
+
+  /* ============ game progress on the tiles (read from the journals' saved state) ============ */
+  function progHTML(it) {
+    var p = RR ? RR.progress(it.id) : { earned: 0, total: 0, pct: 0, counts: { platinum: 0, gold: 0, silver: 0, bronze: 0 } };
+    var st = it.stats ? it.stats() : null;
+    return '<div class="prog__top"><div class="stat"><span>Progress</span><b>' + p.pct + '%</b></div><div class="stat"><span>Earned</span><b>' + p.earned + " / " + p.total + "</b></div></div>" +
+      '<div class="prog__bar" style="--w:' + p.pct + '%"><i></i></div>' +
+      '<div class="tro">' + gradeRow(p.counts) + "</div>" +
+      (st ? '<div class="chips" style="margin-top:calc(var(--u)*1)">' + st.chips.map(function (c) { return '<span class="chip">' + c + "</span>"; }).join("") + "</div>" : "");
+  }
+  function refreshOne(it, v) {
+    var box = $(".prog", v); if (box) box.innerHTML = progHTML(it);
+    var p = RR ? RR.progress(it.id) : { earned: 0 };
+    var btn = $("[data-open]", v); if (btn) btn.textContent = p.earned > 0 ? "Continue journal" : "Start journal";
+  }
+  function refreshStats() {
+    ITEMS.forEach(function (it) { if (it.id !== "welcome") { var v = $("#view-" + it.id); if (v) refreshOne(it, v); } });
+    buildTrophyCard();
   }
 
   /* ============ selection ============ */
@@ -597,6 +718,7 @@
   /* ============ launch: tile grows to fill the screen ============ */
   function launch(url, tileEl) {
     sfx.select();
+    try { sessionStorage.setItem("rr420.launch", "1"); } catch (e) {}
     if (quick()) { location.href = url; return; }
     var r = tileEl.getBoundingClientRect();
     var o = document.createElement("div");
@@ -609,7 +731,8 @@
     requestAnimationFrame(function () { o.classList.add("go"); });
     setTimeout(function () { location.href = url; }, 560);
   }
-  window.addEventListener("pageshow", function () { $$(".launch").forEach(function (n) { n.remove(); }); });
+  window.addEventListener("pageshow", function () { $$(".launch").forEach(function (n) { n.remove(); }); refreshStats(); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshStats(); });
 
   /* ============ options menu ============ */
   var menu = $("#menu");
@@ -750,6 +873,7 @@
     return false;
   }
   function input(a) {
+    if (authOpen) return authInput(a);
     var z = activeZone();
     if (z === "sheet") {
       if (a === "back") closeSheet();
@@ -792,6 +916,7 @@
   var KEYS = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down", Escape: "back", Backspace: "back", PageUp: "prev", PageDown: "next", q: "prev", e: "next" };
   document.addEventListener("keydown", function (e) {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (authOpen) { authKey(e); return; }
     var a = KEYS[e.key];
     if (!a) return;
     if ((a === "prev" || a === "next") && sheet.hidden) return;
@@ -823,15 +948,134 @@
   requestAnimationFrame(padLoop);
 
   /* ============ clock ============ */
-  function tick() { $("#clock").textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+  function tick() { var t = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); $("#clock").textContent = t; var a = $("#auth-clock"); if (a) a.textContent = t; }
   tick(); setInterval(tick, 15000);
 
+  /* ============ sign-in: boot screen, then "who's viewing?" ============ */
+  var authOpen = false, authPhase = "login", bootTimer = null, bokehRaf = 0;
+  var authEl = $("#auth"), stageEl = $("#stage");
+  function currentUser() { return RR ? RR.user() : null; }
+  function paintUser() {
+    var av = $(".avatar"); av.textContent = "A"; av.appendChild(document.createElement("i")); av.title = "Armand";
+  }
+  function startBokeh() {
+    var cv = $("#bokeh"), ctx = cv.getContext("2d"), W = 0, H = 0, D = 1, ps = [], t0 = performance.now();
+    var sprite = document.createElement("canvas"); sprite.width = sprite.height = 128;
+    var g = sprite.getContext("2d"), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, "rgba(255,226,170,.95)"); gr.addColorStop(.55, "rgba(255,200,130,.55)"); gr.addColorStop(.86, "rgba(255,190,120,.30)"); gr.addColorStop(1, "rgba(255,190,120,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+    function size() {
+      D = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+      cv.width = W * D; cv.height = H * D;
+      ps = []; var n = W < 700 ? 46 : 92;
+      for (var i = 0; i < n; i++) {
+        var big = Math.random() < 0.12;
+        ps.push({ x: Math.random() * W, y: H * (0.3 + Math.random() * 0.75), r: big ? 14 + Math.random() * 16 : 2 + Math.random() * 7,
+          vx: 0.05 + Math.random() * 0.22, vy: -(0.01 + Math.random() * 0.09), a: 0.16 + Math.random() * 0.5, ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 1.1 });
+      }
+    }
+    size(); window.addEventListener("resize", size);
+    var still = quick();
+    function frame(now) {
+      var t = (now - t0) / 1000;
+      ctx.setTransform(D, 0, 0, D, 0, 0); ctx.clearRect(0, 0, W, H); ctx.globalCompositeOperation = "lighter";
+      ps.forEach(function (p) {
+        if (!still) { p.x += p.vx; p.y += p.vy; if (p.x - p.r > W) p.x = -p.r; if (p.y + p.r < 0) p.y = H + p.r; }
+        var tw = still ? 1 : 0.62 + 0.38 * Math.sin(t * p.sp + p.ph);
+        ctx.globalAlpha = p.a * tw; ctx.drawImage(sprite, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+      });
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+      if (authOpen && !still) bokehRaf = requestAnimationFrame(frame);
+    }
+    cancelAnimationFrame(bokehRaf); bokehRaf = requestAnimationFrame(frame);
+  }
+  function showAuth(opts) {
+    opts = opts || {};
+    authOpen = true; authEl.hidden = false; authEl.classList.remove("out", "picking");
+    $$(".prof", authEl).forEach(function (b) { b.classList.remove("chosen"); });
+    $("#auth-title").textContent = "Welcome back to Research & Reflection"; $("#auth-sub").textContent = "Who's viewing?";
+    stageEl.inert = true; stageEl.classList.remove("stage-enter");
+    closeSettings(); startBokeh();
+    if (opts.boot && !quick()) {
+      authPhase = "boot"; authEl.classList.add("is-boot"); authEl.classList.remove("is-login");
+      clearTimeout(bootTimer); bootTimer = setTimeout(toLogin, 3200);
+    } else toLogin();
+  }
+  function toLogin() {
+    clearTimeout(bootTimer); authPhase = "login";
+    authEl.classList.remove("is-boot"); authEl.classList.add("is-login");
+    setTimeout(function () { var b = $('.prof[data-user="armand"]', authEl); if (b) b.focus({ preventScroll: true }); }, 450);
+  }
+  function chooseUser(u) {
+    if (authPhase !== "login") return;
+    authPhase = "done"; sfx.select();
+    if (RR) RR.setUser(u);
+    authEl.classList.add("picking");
+    var b = $('.prof[data-user="' + u + '"]', authEl); if (b) b.classList.add("chosen");
+    $("#auth-title").textContent = "Welcome, Armand";
+    $("#auth-sub").textContent = "Picking up where you left off";
+    setTimeout(finishAuth, 1000);
+  }
+  function finishAuth() {
+    paintUser(); refreshStats();
+    stageEl.inert = false; stageEl.classList.add("stage-enter");
+    enterHome(true);
+    authEl.classList.add("out");
+    setTimeout(function () { authEl.hidden = true; authOpen = false; cancelAnimationFrame(bokehRaf); }, 800);
+  }
+  function authKey(e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (authPhase === "boot") { if (e.key !== "Shift" && e.key !== "Tab") { e.preventDefault(); toLogin(); } return; }
+    if (authPhase !== "login") { e.preventDefault(); return; }
+    var items = $$(".prof, .auth__power", authEl), i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      var profs = $$(".prof", authEl), k = profs.indexOf(document.activeElement);
+      if (k < 0) profs[profs.length - 1].focus(); else { var n = profs[Math.max(0, Math.min(profs.length - 1, k + (e.key === "ArrowLeft" ? -1 : 1)))]; if (n !== document.activeElement) { n.focus(); sfx.move(); } }
+    } else if (e.key === "ArrowDown") { e.preventDefault(); $(".auth__power", authEl).focus(); sfx.move(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); var p = $('.prof[data-user="armand"]', authEl); p.focus(); sfx.move(); }
+    else if (e.key === "Tab") { e.preventDefault(); items[(i + (e.shiftKey ? -1 : 1) + items.length) % items.length].focus(); }
+  }
+  function authInput(a) {
+    if (authPhase === "boot") return toLogin();
+    if (authPhase !== "login") return;
+    var profs = $$(".prof", authEl), k = profs.indexOf(document.activeElement);
+    if (a === "left" || a === "right") { var n = profs[Math.max(0, Math.min(profs.length - 1, (k < 0 ? profs.length - 1 : k + (a === "left" ? -1 : 1))))]; if (n !== document.activeElement) { n.focus(); sfx.move(); } }
+    else if (a === "down") $(".auth__power", authEl).focus();
+    else if (a === "up") $('.prof[data-user="armand"]', authEl).focus();
+    else if (a === "confirm" && document.activeElement) document.activeElement.click();
+  }
+  $$(".prof[data-user]", authEl).forEach(function (b) { b.addEventListener("click", function () { chooseUser(b.dataset.user); }); });
+  // "Add User" is just for style: focusable like the console, but it does nothing
+  $("#add-user").addEventListener("click", function () { var el = this; el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge"); });
+  $("#auth-restart").addEventListener("click", function () { sfx.back(); showAuth({ boot: true }); });
+  authEl.addEventListener("click", function (e) { if (authPhase === "boot") toLogin(); });
+  $("#btn-switch").addEventListener("click", function () { sfx.back(); showAuth({ boot: false }); });
+
+  /* Boot mark: drop your own logo at rr-website/project/assets/boot-logo.svg (or .png) and it replaces the "A" automatically.
+     Use a dark glyph on a transparent background; it sits inside the white circle. */
+  (function () {
+    var tries = ["rr-website/project/assets/boot-logo.svg", "rr-website/project/assets/boot-logo.png"];
+    (function next(i) {
+      if (i >= tries.length) return;
+      var im = new Image();
+      im.onload = function () { var el = $("#boot-logo"); el.textContent = ""; im.alt = ""; el.appendChild(im); };
+      im.onerror = function () { next(i + 1); };
+      im.src = tries[i];
+    })(0);
+  })();
+
   /* ============ boot ============ */
+  function enterHome(useHash) {
+    var start = useHash ? ITEMS.map(function (i) { return i.id; }).indexOf((location.hash || "").replace("#", "")) : -1;
+    select(start > -1 ? start : S.idx);
+    if (innerWidth > 900) focusRow();
+  }
   applyPrefs();
   buildBackgrounds(); buildRow(); buildTrophyCard(); buildGameViews();
-  var start = ITEMS.map(function (i) { return i.id; }).indexOf((location.hash || "").replace("#", ""));
-  select(start > -1 ? start : 0);
-  if (innerWidth > 900) focusRow();
+  paintUser();
+  if (currentUser()) { refreshStats(); stageEl.classList.add("stage-enter"); enterHome(true); }
+  else { showAuth({ boot: true }); }
 })();
 </script>
 </body>
