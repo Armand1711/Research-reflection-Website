@@ -1129,6 +1129,7 @@
   if (currentUser()) { refreshStats(); stageEl.classList.add("stage-enter"); enterHome(true); homeMusic(); }
   else { showAuth({ boot: true }); }
   ["keydown", "pointerdown"].forEach(function (t) { document.addEventListener(t, function () { if (currentUser()) homeMusic(); }, true); });
+  document.addEventListener("rrsound:unlocked", function () { if (currentUser()) homeMusic(); });   // "Press any button" dismissed
 })();
 </script>
 </body>
