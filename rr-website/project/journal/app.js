@@ -261,10 +261,16 @@
     setupProgress();
     setupSemSwitch();
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    const h = location.hash && location.hash.slice(1);
+    if (h && !render.hashDone) {
+      render.hashDone = true;
+      const t = document.getElementById(h);
+      if (t) setTimeout(() => t.scrollIntoView({ block: "start" }), 60);
+    }
   }
 
   function setupSemSwitch() {
-    $$(".sem-btn").forEach((b) => b.addEventListener("click", () => {
+    $$(".sem-btn[data-sem]").forEach((b) => b.addEventListener("click", () => {
       const target = Number(b.dataset.sem);
       if (target !== SEM) render(target);
     }));
@@ -308,10 +314,11 @@
       const body = $(".week__body", wk);
       if (!wk.classList.contains("open")) return;
       body.style.height = body.scrollHeight + "px";
-      void body.offsetHeight;
+      void body.offsetHeight;            // reflow
       body.style.height = "0px";
       wk.classList.remove("open");
       $(".week__head", wk).setAttribute("aria-expanded", "false");
+      // Guaranteed collapsed end-state even if the height transition stalls
       setTimeout(() => {
         if (!wk.classList.contains("open")) {
           body.style.transition = "none";
@@ -330,6 +337,7 @@
       const settle = () => { if (wk.classList.contains("open")) body.style.height = "auto"; };
       const onEnd = (e) => { if (e.target === body && e.propertyName === "height") { settle(); body.removeEventListener("transitionend", onEnd); } };
       body.addEventListener("transitionend", onEnd);
+      // Guaranteed end-state even if the transition never advances (non-compositing stall)
       setTimeout(settle, 500);
     }
     weeks.forEach((wk) => {
@@ -372,7 +380,7 @@
     update();
   }
 
-  const start = () => render(1);
+  const start = () => render(new URLSearchParams(location.search).get("sem") === "2" ? 2 : 1);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
 })();
