@@ -30,7 +30,58 @@
 
   function url(f) { return BASE + encodeURIComponent(f); }
   function pref(k) { try { return localStorage.getItem("rr420." + k) !== "0"; } catch (e) { return true; } }
-  function quiet(p) { if (p && p.catch) p.catch(function () {}); }
+  function quiet(p) { if (p && p.catch) p.catch(blocked); }
+
+  /* ---------- "Press any button": browsers refuse all audio until the visitor has clicked or pressed
+     a key on the page (hovering does not count). Moving between pages keeps that permission, but a
+     reload or a fresh visit where the sign-in is skipped starts silent. The first refused sound shows
+     this screen; the press that dismisses it switches sound on, and the page restarts its music. ---------- */
+  var gate = null;
+  var PRESS_SCREENS = ".auth:not([hidden]), .rrg-title";   // screens that already ask for a press
+  function blocked(err) {
+    if (!err || err.name !== "NotAllowedError" || gate) return;
+    if (navigator.userActivation && navigator.userActivation.hasBeenActive) return;
+    if (document.querySelector(PRESS_SCREENS)) return;
+    showGate();
+  }
+  function showGate() {
+    if (!document.getElementById("rrs-css")) {
+      var st = document.createElement("style"); st.id = "rrs-css";
+      st.textContent =
+        ".rrs-gate{position:fixed;inset:0;z-index:2000;display:grid;place-content:center;justify-items:center;gap:18px;text-align:center;padding:24px;" +
+        "background:rgba(6,6,14,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;font-family:Inter,system-ui,sans-serif;cursor:pointer;transition:opacity .45s}" +
+        ".rrs-gate.out{opacity:0;pointer-events:none}" +
+        ".rrs-gate i{width:64px;height:64px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;font:500 26px/1 Inter,sans-serif;font-style:normal;animation:rrsPulse 2.2s ease-in-out infinite}" +
+        ".rrs-gate b{font:300 clamp(26px,3.4vw,46px)/1.2 Inter,system-ui,sans-serif}" +
+        ".rrs-gate small{font-size:14px;color:rgba(255,255,255,.62)}" +
+        "@keyframes rrsPulse{50%{opacity:.45}}" +
+        "@media (prefers-reduced-motion:reduce){.rrs-gate i{animation:none}}";
+      document.head.appendChild(st);
+    }
+    gate = document.createElement("div");
+    gate.className = "rrs-gate"; gate.setAttribute("role", "dialog"); gate.setAttribute("aria-label", "Press any button to continue");
+    gate.innerHTML = "<i aria-hidden=\"true\">&#10005;</i><b>Press any button to continue</b><small>Sound and music start when you press a key, click or tap</small>";
+    document.body.appendChild(gate);
+    padWatch();
+  }
+  function hideGate(e) {
+    if (!gate || (e && e.type === "keydown" && /^(Shift|Control|Alt|Meta|Tab|Escape)$/.test(e.key))) return;
+    if (e) { e.preventDefault(); e.stopImmediatePropagation(); }   // the waking press does nothing else
+    var g = gate; gate = null; g.classList.add("out");
+    setTimeout(function () { g.remove(); }, 500);
+    document.dispatchEvent(new Event("rrsound:unlocked"));   // pages restart their music (a controller press cannot unlock audio)
+  }
+  document.addEventListener("keydown", hideGate, true);
+  document.addEventListener("pointerdown", function (e) { if (gate && gate.contains(e.target)) hideGate(e); }, true);
+  function padWatch() {
+    if (!gate) return;
+    var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (var i = 0; i < pads.length; i++) {
+      var p = pads[i];
+      if (p && p.buttons.some(function (b) { return b.pressed; })) { hideGate(); return; }
+    }
+    requestAnimationFrame(padWatch);
+  }
 
   var cache = {};
   function base(file) {
@@ -114,7 +165,7 @@
     var a = track(name), vol = TRACKS[name][1];
     if (!a.paused) { fade(a, vol, 600); return; }   // already playing (or fading out): bring it back up
     var p = a.play();
-    if (p && p.then) p.then(function () { if (current === name) fade(a, vol, 1200); else a.pause(); }, function () {});
+    if (p && p.then) p.then(function () { if (current === name) fade(a, vol, 1200); else a.pause(); }, blocked);
     else fade(a, vol, 1200);
   }
   function stopMusic(ms) {
