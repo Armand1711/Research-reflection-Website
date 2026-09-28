@@ -24,26 +24,17 @@
   var GRADES = ["platinum", "gold", "silver", "bronze"];
   var TROPHY = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3 3 0 0 0 7 10.5M17 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 14v3.5M8.5 20h7M9.5 17.5h5"/></svg>';
 
-  /* ---------- sound (shares the home screen's setting) ---------- */
-  function soundOn() { try { return localStorage.getItem("rr420.sound") === "1"; } catch (e) { return false; } }
+  /* ---------- sound: the console sound set in sounds.js (shares the home screen's setting) ---------- */
+  function soundOn() { try { return localStorage.getItem("rr420.sound") !== "0"; } catch (e) { return true; } }
   function setSound(v) { try { localStorage.setItem("rr420.sound", v ? "1" : "0"); } catch (e) {} }
-  var AC = null;
-  function tone(f, d, v, delay) {
-    if (!soundOn()) return;
-    try {
-      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-      if (AC.state === "suspended") AC.resume();
-      var t = AC.currentTime + (delay || 0), o = AC.createOscillator(), g = AC.createGain();
-      o.type = "sine"; o.frequency.setValueAtTime(f, t);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + 0.03);
-    } catch (e) {}
-  }
+  function snd(n) { if (window.RRSound) window.RRSound.play(n); }
   var sfx = {
-    move: function () { tone(660, 0.06, 0.04); },
-    select: function () { tone(520, 0.09, 0.05); tone(780, 0.14, 0.045, 0.07); },
-    back: function () { tone(420, 0.09, 0.045); tone(300, 0.13, 0.035, 0.06); },
-    trophy: function () { tone(880, 0.18, 0.05); tone(1175, 0.18, 0.05, 0.12); tone(1568, 0.34, 0.05, 0.24); }
+    move: function () { snd("move"); },
+    select: function () { snd("select"); },
+    back: function () { snd("back"); },
+    menu: function () { snd("menu"); },
+    home: function () { snd("home"); },
+    trophy: function (g) { snd(g === "platinum" ? "platinum" : "trophy"); }
   };
 
   /* ---------- styles ---------- */
@@ -207,7 +198,7 @@
     t.className = "rrg-toast rrg-g-" + d.g; t.setAttribute("role", "status");
     t.innerHTML = TROPHY + "<div><small>" + GRADE_NAME[d.g] + " trophy earned</small><b>" + d.name + "</b></div>";
     toastHost.appendChild(t);
-    sfx.trophy();
+    sfx.trophy(d.g);
     setTimeout(function () { t.remove(); toastBusy = false; setTimeout(nextToast, 250); }, 4700);
   }
 
@@ -348,7 +339,7 @@
     lastFocus = document.activeElement;
     menuOpen = true; menuView = view || "main";
     document.documentElement.style.overflow = "hidden";
-    setInert(true); menuEl.classList.add("open"); renderMenu(); sfx.select();
+    setInert(true); menuEl.classList.add("open"); renderMenu(); sfx.menu();
   }
   function closeMenu() {
     if (!menuOpen) return;
@@ -357,7 +348,10 @@
     sfx.back();
     if (lastFocus && document.body.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); else if (chip) chip.focus({ preventScroll: true });
   }
-  function goHome() { location.href = HOME + "#s" + SEM; }
+  function goHome() {
+    sfx.home();   // the page is about to unload, so give the sound a moment to start
+    setTimeout(function () { location.href = HOME + "#s" + SEM; }, 380);
+  }
   function onPanelClick(e) {
     var g = e.target.closest("[data-goto]");
     if (g) { var el = document.getElementById(g.dataset.goto); closeMenu(); if (el) setTimeout(function () { window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 6, behavior: "smooth" }); }, 80); return; }
@@ -368,7 +362,7 @@
     else if (a === "chapters" || a === "trophies" || a === "main") { menuView = a; sfx.select(); renderMenu(); }
     else if (a === "mode") { var readNow = !play(); closeMenu(); window.RRPlay.setMode(readNow ? "play" : "read"); }
     else if (a === "sound") { setSound(!soundOn()); b.setAttribute("aria-checked", soundOn() ? "true" : "false"); sfx.select(); }
-    else if (a === "quit") { sfx.back(); goHome(); }
+    else if (a === "quit") goHome();
   }
   function menuBack() { if (menuView !== "main") { menuView = "main"; renderMenu(); sfx.back(); } else closeMenu(); }
   function moveMenuFocus(d) {
@@ -462,7 +456,7 @@
   }
 
   window.RRGame = {
-    onRender: onRender, art: art, sfx: sfx, openMenu: openMenu,
+    onRender: onRender, art: art, sfx: sfx, openMenu: openMenu, quit: goHome,
     busy: function () { return titleOpen || menuOpen; }
   };
   if ($("#cover")) onRender(/[?&]sem=2/.test(location.search) ? 2 : 1);
