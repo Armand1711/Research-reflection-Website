@@ -287,7 +287,7 @@
   function play(i) {
     var c = chapters[i]; if (!c) return;
     sfx("select");
-    try { localStorage.setItem(lastKey(), c.id); } catch (e) {}
+    try { sessionStorage.setItem(lastKey(), c.id); } catch (e) {}
     showLoader(c, function () { enterLevel(i); });
   }
   function showLoader(c, done) {
@@ -474,7 +474,7 @@
     var at = -1;
     if (hash) at = chapters.map(function (c) { return c.id; }).indexOf(hash);
     if (at > -1) { sel = at; view = "hub"; play(at); return; }
-    var last = null; try { last = localStorage.getItem(lastKey()); } catch (e) {}
+    var last = null; try { last = sessionStorage.getItem(lastKey()); } catch (e) {}
     var li = chapters.map(function (c) { return c.id; }).indexOf(last);
     if (li < 0) { li = 0; for (var i = 0; i < chapters.length; i++) if (!objective(chapters[i]).done) { li = i; break; } }
     sel = li;

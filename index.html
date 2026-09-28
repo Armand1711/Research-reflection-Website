@@ -7,7 +7,7 @@
 <title>Research &amp; Reflection · RR420 · Armand</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --u: min(1.05vw, 1.9vh);
@@ -34,6 +34,8 @@
   .bg svg{ position:absolute; inset:0; width:100%; height:100%; }
   .bg .drift{ animation:drift 26s ease-in-out infinite alternate; }
   @keyframes drift{ from{ transform:translate(-14px,6px); } to{ transform:translate(18px,-8px); } }
+  .bg-photo{ position:absolute; inset:0; background:#b3141b 62% 30% / cover no-repeat; }
+  .bg-photo::after{ content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(40,0,0,.55) 0%, rgba(40,0,0,.15) 45%, rgba(40,0,0,0) 70%); }
   .shade{ position:fixed; inset:0; z-index:1; pointer-events:none;
     background:linear-gradient(180deg, rgba(3,4,10,.55) 0%, rgba(3,4,10,0) 22%, rgba(3,4,10,0) 45%, rgba(3,4,10,.72) 100%); }
 
@@ -58,7 +60,7 @@
     width:calc(var(--u)*4.8); height:calc(var(--u)*4.8); border-radius:calc(var(--u)*1);
     transition:width .5s var(--ease), height .5s var(--ease); }
   .tile__art{ position:absolute; inset:0; border-radius:inherit; overflow:hidden; background:#10121f; box-shadow:0 6px 22px rgba(0,0,0,.45); transition:transform .5s var(--ease); }
-  .tile__art svg{ width:100%; height:100%; display:block; }
+  .tile__art svg,.tile__art img{ width:100%; height:100%; display:block; object-fit:cover; }
   .tile.selected{ width:calc(var(--u)*7.8); height:calc(var(--u)*7.8); }
   .tile::after{ content:""; position:absolute; inset:-5px; border-radius:calc(var(--u)*1.35); border:2px solid transparent; pointer-events:none; transition:border-color .25s, box-shadow .25s; }
   .tile.selected::after{ border-color:rgba(255,255,255,.28); }
@@ -70,6 +72,12 @@
   .tile__label{ position:absolute; left:0; top:100%; margin-top:calc(var(--u)*1.05); white-space:nowrap; font-size:calc(var(--u)*1.4); font-weight:500;
     text-shadow:0 1px 8px rgba(0,0,0,.6); opacity:0; transform:translateY(-5px); transition:opacity .35s .1s, transform .45s .1s var(--ease); }
   .tile.selected .tile__label{ opacity:1; transform:none; }
+  .tile__label .ps5{ display:inline-block; margin-right:.55em; padding:.1em .45em; border:1.5px solid currentColor; border-radius:.3em; font:600 .72em/1.2 Inter, sans-serif; font-style:normal; letter-spacing:.04em; vertical-align:.12em; }
+  /* game tile hero (Marvel's Spider-Man 2) */
+  .sm-logo{ display:flex; flex-direction:column; align-items:flex-start; margin-bottom:calc(var(--u)*1.1); filter:drop-shadow(0 2px 18px rgba(0,0,0,.45)); }
+  .sm-logo__m{ font:600 calc(var(--u)*1.2)/1 Oswald, Inter, sans-serif; letter-spacing:.08em; color:#fff; background:#e3262e; padding:.22em .5em .16em; margin-bottom:calc(var(--u)*.45); }
+  .sm-logo__t{ font:500 clamp(40px, calc(var(--u)*6.2), 116px)/.95 Oswald, Inter, sans-serif; letter-spacing:.03em; color:#eef0f4;
+    background:linear-gradient(180deg,#ffffff 30%,#b9bdc8); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 
   /* ---------- views ---------- */
   .content{ position:absolute; inset:0; z-index:2; pointer-events:none; }
@@ -389,7 +397,7 @@
       <button class="prof prof--armand" type="button" data-user="armand">
         <span class="prof__pad" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 3.8 5.2l-1 3.2a2.2 2.2 0 0 1-3.6.9L14.5 15h-5l-1.7 2.3a2.2 2.2 0 0 1-3.6-.9l-1-3.2A4 4 0 0 1 7 8z"/></svg></span>
         <span class="prof__av"><em>A</em></span>
-        <b>Armand</b><small>Progress is saved</small>
+        <b>Armand</b><small>Trophies last this session</small>
       </button>
     </div>
     <button class="auth__power" type="button" id="auth-restart" aria-label="Restart"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 6.9a8 8 0 1 0 11.4 0"/></svg></button>
@@ -557,7 +565,10 @@
         '<g class="drift">' + contour(16, "#5ff0c0") + "</g></svg>";
     }
   };
+  var GAME_DIR = "rr-website/project/assets/games/";
+  ART.sm2 = function () { return '<div class="bg-photo" style="background-image:url(' + GAME_DIR + 'spiderman2-bg.jpg)"></div>'; };
   function tileArt(id) {
+    if (id === "sm2") return '<img src="' + GAME_DIR + 'spiderman2-icon.webp" alt="">';
     if (id === "welcome") {
       return '<svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#171a2e"/><g fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity=".92">' +
         '<path d="M22 22l14 14M36 22L22 36"/><circle cx="68" cy="29" r="8.5"/><path d="M29 78l-9-15h18z"/><rect x="60" y="62" width="16" height="16" rx="1.5"/></g></svg>';
@@ -591,7 +602,11 @@
         if (!J2) return null;
         var d = s2WeeksDone();
         return { chips: [d + " of 8 weeks logged", J2.wall.length + " wall notes", J2.report.themes.length + " evidence cards"] };
-      } }
+      } },
+    /* a game in the library: its own wallpaper and menu music; Play Game opens its PlayStation.com page */
+    { id: "sm2", label: "Marvel\u2019s Spider-Man 2", accent: "#e3262e", game: true, music: "sm2", title: "Marvel\u2019s Spider-Man 2",
+      tagline: "Be Greater Together.", url: "https://www.playstation.com/games/marvels-spider-man-2/",
+      menu: [["View on PlayStation.com", ""]] }
   ];
   var S = { idx: 0, sheet: null, sheetOrigin: null, menuFor: null, prefs: { sound: true, music: true, rm: false } };
   function quick() { return S.prefs.rm || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
@@ -619,7 +634,12 @@
   /* music: "signin" on the Who's viewing? screen, "home" on the home screen, null to fade out */
   function music(name, ms) { if (window.RRSound) { if (name) window.RRSound.startMusic(name); else window.RRSound.stopMusic(ms); } }
   var leaving = false;
-  function homeMusic() { if (!authOpen && !leaving && S.prefs.music && !window.RRSound.musicPlaying("home")) music("home"); }
+  function tileTrack() { return ITEMS[S.idx].music || "home"; }   // a game tile plays its own menu music
+  function homeMusic() {
+    if (authOpen || leaving || !S.prefs.music || !currentUser() || !window.RRSound) return;
+    var t = tileTrack();
+    if (!window.RRSound.musicPlaying(t)) music(t);
+  }
 
   /* ============ build ============ */
   function buildBackgrounds() {
@@ -636,9 +656,20 @@
     ITEMS.forEach(function (it, i) {
       var b = document.createElement("button");
       b.className = "tile"; b.type = "button"; b.dataset.i = i;
-      b.setAttribute("aria-label", it.label + (it.id === "welcome" ? ": the manifesto" : ": journal development project"));
-      b.innerHTML = '<span class="tile__art">' + tileArt(it.id) + '</span><span class="tile__label">' + it.label + "</span>";
+      b.setAttribute("aria-label", it.label + (it.id === "welcome" ? ": the manifesto" : it.game ? ": game" : ": journal development project"));
+      b.innerHTML = '<span class="tile__art">' + tileArt(it.id) + '</span><span class="tile__label">' + (it.game ? '<i class="ps5">PS5</i>' : "") + it.label + "</span>";
       b.addEventListener("click", function () { if (i !== S.idx) { select(i); sfx.move(); } else activate(i, b); });
+      var hoverT = null;
+      b.addEventListener("pointerenter", function (e) {
+        if (e.pointerType !== "mouse") return;
+        hoverT = setTimeout(function () {
+          if (i === S.idx || authOpen || menu.classList.contains("open") || settings.classList.contains("open")) return;
+          var a = document.activeElement, inRow = a && a.closest && a.closest("#row");
+          select(i);
+          if (inRow) b.focus({ preventScroll: true });
+        }, 140);
+      });
+      b.addEventListener("pointerleave", function () { clearTimeout(hoverT); });
       row.appendChild(b);
     });
   }
@@ -646,6 +677,7 @@
     var host = $("#content");
     ITEMS.forEach(function (it, i) {
       if (it.id === "welcome") return;
+      if (it.game) { buildGameView(it, host); return; }
       var st = it.stats ? it.stats() : null;
       var v = document.createElement("section");
       v.className = "view"; v.id = "view-" + it.id; v.dataset.id = it.id; v.setAttribute("aria-label", it.label);
@@ -665,6 +697,22 @@
     });
   }
 
+  function buildGameView(it, host) {
+    var v = document.createElement("section");
+    v.className = "view"; v.id = "view-" + it.id; v.dataset.id = it.id; v.setAttribute("aria-label", it.title);
+    v.innerHTML =
+      '<div class="hero">' +
+        '<div class="sm-logo rise" style="--i:0" role="img" aria-label="' + it.title + '"><span class="sm-logo__m">MARVEL</span><span class="sm-logo__t">SPIDER-MAN 2</span></div>' +
+        '<p class="rise" style="--i:1">' + it.tagline + "</p>" +
+        '<div class="actions rise" style="--i:2"><button class="btn-main" data-first data-open>Play Game</button>' +
+        '<button class="btn-round" data-more aria-label="More options" aria-haspopup="menu"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>' +
+      "</div>";
+    host.appendChild(v);
+    $("[data-open]", v).addEventListener("click", function () { playGame(it); });
+    $("[data-more]", v).addEventListener("click", function (e) { openMenu(it, e.currentTarget); });
+  }
+  function playGame(it) { window.open(it.url, "_blank", "noopener"); }
+
   /* ============ game progress on the tiles (read from the journals' saved state) ============ */
   function progHTML(it) {
     var p = RR ? RR.progress(it.id) : { earned: 0, total: 0, pct: 0, counts: { platinum: 0, gold: 0, silver: 0, bronze: 0 } };
@@ -680,7 +728,7 @@
     var btn = $("[data-open]", v); if (btn) btn.textContent = p.earned > 0 ? "Continue journal" : "Start journal";
   }
   function refreshStats() {
-    ITEMS.forEach(function (it) { if (it.id !== "welcome") { var v = $("#view-" + it.id); if (v) refreshOne(it, v); } });
+    ITEMS.forEach(function (it) { if (it.id !== "welcome" && !it.game) { var v = $("#view-" + it.id); if (v) refreshOne(it, v); } });
     buildTrophyCard();
   }
 
@@ -702,6 +750,7 @@
     });
     document.documentElement.style.setProperty("--accent", it.accent);
     try { history.replaceState(null, "", "#" + it.id); } catch (e) {}
+    homeMusic();
   }
   function focusRow() { closeMenu(true); $$(".tile")[S.idx].focus({ preventScroll: true }); }
   function enterContent() {
@@ -711,7 +760,7 @@
   }
   function activate(i, tileEl) {
     var it = ITEMS[i];
-    if (it.id === "welcome") { sfx.select(); enterContent(); } else launch(it.url, tileEl);
+    if (it.id === "welcome") { sfx.select(); enterContent(); } else if (it.game) playGame(it); else launch(it.url, tileEl);
   }
 
   /* ============ launch: tile grows to fill the screen ============ */
@@ -741,7 +790,7 @@
       return '<button class="pop__item" role="menuitem" data-href="' + (it.url + m[1]) + '"><span>' + m[0] + "</span></button>";
     }).join("");
     $$(".pop__item", menu).forEach(function (b) {
-      b.addEventListener("click", function () { var t = $$(".tile")[S.idx]; closeMenu(true); launch(b.dataset.href, t); });
+      b.addEventListener("click", function () { var t = $$(".tile")[S.idx]; closeMenu(true); if (it.game) window.open(b.dataset.href, "_blank", "noopener"); else launch(b.dataset.href, t); });
     });
     var r = btn.getBoundingClientRect();
     menu.style.left = Math.max(12, Math.min(r.left, innerWidth - 280)) + "px";
@@ -1017,9 +1066,9 @@
     setTimeout(finishAuth, 1000);
   }
   function finishAuth() {
-    paintUser(); refreshStats(); sfx.home(); music("home");
+    paintUser(); refreshStats(); sfx.home();
     stageEl.inert = false; stageEl.classList.add("stage-enter");
-    enterHome(true);
+    enterHome(true); music(tileTrack());
     authEl.classList.add("out");
     setTimeout(function () { authEl.hidden = true; authOpen = false; cancelAnimationFrame(bokehRaf); }, 800);
   }
@@ -1043,8 +1092,8 @@
     if (authPhase !== "login") return;
     var profs = $$(".prof", authEl), k = profs.indexOf(document.activeElement);
     if (a === "left" || a === "right") { var n = profs[Math.max(0, Math.min(profs.length - 1, (k < 0 ? profs.length - 1 : k + (a === "left" ? -1 : 1))))]; if (n !== document.activeElement) { n.focus(); sfx.move(); } }
-    else if (a === "down") $(".auth__power", authEl).focus();
-    else if (a === "up") $('.prof[data-user="armand"]', authEl).focus();
+    else if (a === "down") { $(".auth__power", authEl).focus(); sfx.move(); }
+    else if (a === "up") { $('.prof[data-user="armand"]', authEl).focus(); sfx.move(); }
     else if (a === "confirm" && document.activeElement) document.activeElement.click();
   }
   $$(".prof[data-user]", authEl).forEach(function (b) { b.addEventListener("click", function () { chooseUser(b.dataset.user); }); });

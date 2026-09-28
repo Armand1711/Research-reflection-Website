@@ -24,7 +24,8 @@
   /* looping background music: name: [file, volume] */
   var TRACKS = {
     signin: ["002. Select User.mp3", 0.35],
-    home: ["003. Home Menu.mp3", 0.3]
+    home: ["003. Home Menu.mp3", 0.3],
+    sm2: ["01. Main Menu Spiderman2.mp3", 0.4]   // Marvel's Spider-Man 2 tile on the home screen
   };
 
   function url(f) { return BASE + encodeURIComponent(f); }
@@ -36,13 +37,56 @@
     if (!cache[file]) { var a = new Audio(url(file)); a.preload = "auto"; cache[file] = a; }
     return cache[file];
   }
-  function play(name) {
+  var lastMove = 0, pendingSelect = null;
+  function raw(name) {
     var fx = FX[name];
     if (!fx || !pref("sound")) return;
+    if (name === "move" || name === "back") { var now = Date.now(); if (now - lastMove < 70) return; lastMove = now; }
     try { var a = base(fx[0]).cloneNode(); a.volume = fx[1]; quiet(a.play()); } catch (e) {}
+  }
+  /* Every selection plays Enter (see selectSoon below). An action with its own console sound
+     (open a menu, go home, log out) plays that instead, so a press never sounds twice. */
+  function play(name) {
+    if ((name === "back" || name === "move") && pendingSelect) return;   // clicked Back / Next / a tile: Enter wins
+    if (pendingSelect && name !== "trophy" && name !== "platinum") { clearTimeout(pendingSelect); pendingSelect = null; }
+    raw(name);
+  }
+  function selectSoon() {
+    if (pendingSelect) return;
+    pendingSelect = setTimeout(function () { pendingSelect = null; raw("select"); }, 0);
   }
   // warm the cache so the first press is not late
   Object.keys(FX).forEach(function (k) { base(FX[k][0]); });
+
+  /* ---------- sounds for every move and every selection, on both pages ---------- */
+  /* things you can select (clicked, or confirmed with Enter / Space / cross) */
+  var SELECTABLE = "button, a[href], [role=button], [role=switch], [role=menuitem], [role=option], .flip";
+  /* things focus can move onto (mouse hover plays Focus Move, like the cursor on the console) */
+  var FOCUSABLE = SELECTABLE + ", .wall .note, .week__head";
+  function target(e, sel) {
+    var el = e.target && e.target.closest ? e.target.closest(sel) : null;
+    return el && !el.disabled ? el : null;
+  }
+  document.addEventListener("click", function (e) { if (target(e, SELECTABLE)) selectSoon(); }, true);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") tabAt = Date.now();
+    // Enter / Space on a focusable card that is not a real button (buttons fire a click, handled above)
+    if ((e.key === "Enter" || e.key === " ") && !e.repeat) {
+      var a = document.activeElement;
+      if (a && a.matches && a.matches(".flip, .wall .note") && !a.matches("button")) selectSoon();
+    }
+  }, true);
+  var tabAt = 0, hovered = null;
+  document.addEventListener("focusin", function (e) {
+    if (Date.now() - tabAt < 200 && target(e, FOCUSABLE)) play("move");
+  });
+  document.addEventListener("pointerover", function (e) {
+    if (e.pointerType !== "mouse") return;
+    var el = target(e, FOCUSABLE);
+    if (el === hovered) return;
+    hovered = el;
+    if (el) play("move");
+  });
 
   /* music: streamed (the files are large), looped, faded in and out, one track at a time */
   var tracks = {}, current = null;

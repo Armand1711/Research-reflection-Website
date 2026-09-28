@@ -1,7 +1,9 @@
 /* ============================================================
    trophies.js: one source of truth for trophies and progress.
    Loaded by the home screen (index.html) and by the journal page.
-   Progress is stored in localStorage under "rr420.g.s1" / "rr420.g.s2".
+   Progress lasts for the current session only: it is kept in sessionStorage under
+   "rr420.g.s1" / "rr420.g.s2", so it survives reloads and trips between the home
+   screen and the journals, and every new visit starts from zero.
    Nothing is locked: every trophy is earned by exploring content that is
    always open, so the journal reads the same with or without the game layer.
    ============================================================ */
@@ -55,10 +57,12 @@
     { g: "bronze", name: "Second Semester", desc: "Semester 2 journal: six of eight weeks logged so far.", state: "progress" }
   ];
 
-  /* Whether someone has signed in on the home screen this tab (sessionStorage), so reloads skip the sign-in. Progress always lives in localStorage. */
+  /* Whether someone has signed in on the home screen this tab (sessionStorage), so reloads skip the sign-in. */
   function user() { try { return sessionStorage.getItem("rr420.user"); } catch (e) { return null; } }
   function setUser(u) { try { if (u) sessionStorage.setItem("rr420.user", u); else sessionStorage.removeItem("rr420.user"); } catch (e) {} }
-  function store() { try { return window.localStorage; } catch (e) { return null; } }
+  function store() { try { return window.sessionStorage; } catch (e) { return null; } }
+  // progress used to be kept for good in localStorage; clear any left over from before
+  try { localStorage.removeItem("rr420.g.s1"); localStorage.removeItem("rr420.g.s2"); localStorage.removeItem("rr420.p.last.s1"); localStorage.removeItem("rr420.p.last.s2"); } catch (e) {}
   function key(sem) { return "rr420.g." + sem; }
   function blank() { return { earned: {}, weeks: [], flips: [], notes: [], evid: [], seen: {}, started: 0, cheat: 0, opened: 0 }; }
   function load(sem) {
