@@ -268,6 +268,7 @@
       if (t) setTimeout(() => t.scrollIntoView({ block: "start" }), 60);
     }
     if (window.RRGame) window.RRGame.onRender(SEM);   // game layer (game.js); absent = plain journal
+    if (window.RRPlay) window.RRPlay.onRender(SEM);   // play mode (play.js): chapter select + levels
   }
 
   function setupSemSwitch() {

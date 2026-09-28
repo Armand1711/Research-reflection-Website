@@ -300,7 +300,11 @@
     el.classList.add("out");
     setTimeout(function () { el.remove(); }, 650);
     setTimeout(evaluate, 500);
+    if (play()) play().refocus();
   }
+
+  /* play.js (chapter select + levels), when play mode is on */
+  function play() { return window.RRPlay && window.RRPlay.active() ? window.RRPlay : null; }
 
   /* ---------- pause menu ---------- */
   function gradeRow(p) {
@@ -315,6 +319,7 @@
         '<button class="rrg-item" data-act="chapters">Chapter select<em>' + $$(".nav__btn").length + " chapters</em></button>" +
         '<button class="rrg-item" data-act="trophies">Trophies<em>' + p.earned + " of " + p.total + "</em></button>" +
         '<button class="rrg-item" role="switch" aria-checked="' + (soundOn() ? "true" : "false") + '" data-act="sound">Navigation sounds<i class="rrg-sw"></i></button>' +
+        (window.RRPlay ? '<button class="rrg-item" role="switch" aria-checked="' + (play() ? "false" : "true") + '" data-act="mode">Reader mode<i class="rrg-sw"></i></button>' : "") +
         '<button class="rrg-item" data-act="quit">Quit to home screen</button></div>';
     } else if (menuView === "chapters") {
       html = '<button class="rrg-item rrg-back" data-act="main">&#9664; Back</button><div class="rrg-head"><h2>Chapter select</h2></div><div class="rrg-list">' +
@@ -334,8 +339,9 @@
     var first = $(".rrg-item", panelEl); if (first) first.focus({ preventScroll: true });
   }
   function setInert(on) {
-    var app = $("#app"), nav = $(".nav");
-    if (app) app.inert = on; if (nav) nav.inert = on; if (chip) chip.inert = on;
+    var app = $("#app"), nav = $(".nav"), hub = play() && play().view() === "hub";
+    if (app) app.inert = on || hub; if (nav) nav.inert = on; if (chip) chip.inert = on;
+    $$(".rrp-ui").forEach(function (el) { el.inert = on; });
   }
   function openMenu(view) {
     if (titleOpen) return;
@@ -347,7 +353,7 @@
   function closeMenu() {
     if (!menuOpen) return;
     menuOpen = false; menuEl.classList.remove("open"); setInert(false);
-    document.documentElement.style.overflow = "";
+    document.documentElement.style.overflow = play() && play().view() === "hub" ? "hidden" : "";
     sfx.back();
     if (lastFocus && document.body.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); else if (chip) chip.focus({ preventScroll: true });
   }
@@ -358,7 +364,9 @@
     var b = e.target.closest("[data-act]"); if (!b) return;
     var a = b.dataset.act;
     if (a === "resume") closeMenu();
+    else if (a === "chapters" && play()) { var p = play(); closeMenu(); p.hub(); }
     else if (a === "chapters" || a === "trophies" || a === "main") { menuView = a; sfx.select(); renderMenu(); }
+    else if (a === "mode") { var readNow = !play(); closeMenu(); window.RRPlay.setMode(readNow ? "play" : "read"); }
     else if (a === "sound") { setSound(!soundOn()); b.setAttribute("aria-checked", soundOn() ? "true" : "false"); sfx.select(); }
     else if (a === "quit") { sfx.back(); goHome(); }
   }
@@ -425,7 +433,7 @@
       } else {
         if (pad("opt", b(9), now, false)) openMenu("main");
         if (Math.abs(ay) > 0.25 && !b(12) && !b(13)) window.scrollBy(0, ay * 22);
-        if (b(12)) window.scrollBy(0, -18); if (b(13)) window.scrollBy(0, 18);
+        if (!play()) { if (b(12)) window.scrollBy(0, -18); if (b(13)) window.scrollBy(0, 18); }
       }
     }
     requestAnimationFrame(loop);
@@ -448,6 +456,14 @@
     firstRender = false;
   }
 
-  window.RRGame = { onRender: onRender };
+  function art(sem, prefix) {
+    var s = sem === 1 ? ART.s1 : ART.s2();
+    return prefix ? s.replace(/id="(\w+)"/g, 'id="' + prefix + '$1"').replace(/url\(#(\w+)\)/g, "url(#" + prefix + "$1)") : s;
+  }
+
+  window.RRGame = {
+    onRender: onRender, art: art, sfx: sfx, openMenu: openMenu,
+    busy: function () { return titleOpen || menuOpen; }
+  };
   if ($("#cover")) onRender(/[?&]sem=2/.test(location.search) ? 2 : 1);
 })();
