@@ -25,7 +25,8 @@
   var TRACKS = {
     signin: ["002. Select User.mp3", 0.35],
     home: ["003. Home Menu.mp3", 0.3],
-    sm2: ["01. Main Menu Spiderman2.mp3", 0.4]   // Marvel's Spider-Man 2 tile on the home screen
+    // Marvel's Spider-Man 2 tile on the home screen: starts from the top every time you land on it
+    sm2: ["01. Main Menu Spiderman2.mp3", 0.4, { restart: true }]
   };
 
   function url(f) { return BASE + encodeURIComponent(f); }
@@ -161,8 +162,13 @@
     name = name || "signin";
     if (!TRACKS[name] || !pref("music")) return;
     Object.keys(tracks).forEach(function (k) { if (k !== name) stopTrack(k, 900); });   // crossfade
+    var a = track(name), vol = TRACKS[name][1], opt = TRACKS[name][2] || {};
+    var arriving = current !== name;
     current = name;
-    var a = track(name), vol = TRACKS[name][1];
+    if (opt.restart && arriving) {   // back to the beginning, even if it is still fading out from last time
+      clearInterval(a._fade); a.volume = 0;
+      try { a.currentTime = 0; } catch (e) {}
+    }
     if (!a.paused) { fade(a, vol, 600); return; }   // already playing (or fading out): bring it back up
     var p = a.play();
     if (p && p.then) p.then(function () { if (current === name) fade(a, vol, 1200); else a.pause(); }, blocked);
@@ -173,10 +179,14 @@
     Object.keys(tracks).forEach(function (k) { stopTrack(k, ms == null ? 900 : ms); });
   }
 
+  /* fetch a track ahead of time so it starts the moment it is needed */
+  function preloadMusic(name) { if (TRACKS[name]) { var a = track(name); a.preload = "auto"; a.load(); } }
+
   window.RRSound = {
-    play: play, startMusic: startMusic, stopMusic: stopMusic,
+    play: play, startMusic: startMusic, stopMusic: stopMusic, preloadMusic: preloadMusic,
     musicPlaying: function (name) {
-      return Object.keys(tracks).some(function (k) { return (!name || k === name) && !tracks[k].paused; });
+      // a track that is fading out after you moved away does not count as playing
+      return Object.keys(tracks).some(function (k) { return (!name || k === name) && !tracks[k].paused && (!name || current === k); });
     }
   };
 })();
