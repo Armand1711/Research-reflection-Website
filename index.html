@@ -1130,6 +1130,7 @@
   else { showAuth({ boot: true }); }
   ["keydown", "pointerdown"].forEach(function (t) { document.addEventListener(t, function () { if (currentUser()) homeMusic(); }, true); });
   document.addEventListener("rrsound:unlocked", function () { if (currentUser()) homeMusic(); });   // "Press any button" dismissed
+  if (window.RRSound) ITEMS.forEach(function (it) { if (it.music) window.RRSound.preloadMusic(it.music); });   // game tiles start without a delay
 })();
 </script>
 </body>
