@@ -48,7 +48,6 @@
   var YEAR = [
     { g: "platinum", name: "The Whole Year", desc: "Present the finished Research Report (Week 15).", state: "locked" },
     { g: "gold", name: "Research Report", desc: "Progress mark presented in Week 9. The report itself is in progress.", state: "progress" },
-    { g: "gold", name: "Engine Swap", desc: "Drop a 3.5-litre V8 into a 1991 Defender 110.", state: "progress" },
     { g: "silver", name: "Lulama", desc: "Built a 3D AI avatar with Three.js and the Claude API for CHOSA.", state: "done" },
     { g: "silver", name: "The Ritual Room", desc: "Built the Masonic Temple puzzle experience for Union Lodge No. 1 Kimberley.", state: "done" },
     { g: "bronze", name: "Founder", desc: "Co-founded Stack Studio.", state: "done" },
