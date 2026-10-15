@@ -171,6 +171,8 @@
       case "collectMost": return totalNotes > 0 && st.notes.length >= Math.min(d.n || 8, totalNotes);
       case "map": var ids = $$(".nav__btn").map(function (b) { return b.dataset.target; }); return ids.length > 0 && ids.every(function (i) { return st.seen[i]; });
       case "sequel": return !!RR.load(other).opened;
+      case "refs": return !!st.seen.refs;
+      case "halfway": var hs = $$(".nav__btn").map(function (b) { return b.dataset.target; }); return hs.length > 0 && hs.filter(function (i) { return st.seen[i]; }).length >= Math.ceil(hs.length / 2);
       case "cheat": return !!st.cheat;
     }
     return false;
@@ -267,6 +269,11 @@
       return '<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#04141a"/><stop offset=".5" stop-color="#06302f"/><stop offset="1" stop-color="#0d4a44"/></linearGradient><radialGradient id="gd" cx=".2" cy=".2" r=".7"><stop offset="0" stop-color="#3fe0b0" stop-opacity=".35"/><stop offset="1" stop-color="#3fe0b0" stop-opacity="0"/></radialGradient></defs><rect width="1600" height="900" fill="url(#gc)"/><rect width="1600" height="900" fill="url(#gd)"/>' + s + "</svg>";
     }
   };
+  ART.s3 = function () {
+    var rings = "";
+    for (var i = 0; i < 12; i++) rings += '<circle cx="1180" cy="430" r="' + (60 + i * 58) + '" fill="none" stroke="#8aaac8" stroke-opacity="' + (0.34 - i * 0.024).toFixed(3) + '" stroke-width="' + (i % 3 === 0 ? 2.2 : 1.2) + '"' + (i % 4 === 1 ? ' stroke-dasharray="3 9"' : "") + "/>";
+    return '<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="ge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#070b16"/><stop offset=".55" stop-color="#111b33"/><stop offset="1" stop-color="#1d2b4d"/></linearGradient><radialGradient id="gf" cx=".74" cy=".48" r=".5"><stop offset="0" stop-color="#8aaac8" stop-opacity=".35"/><stop offset="1" stop-color="#8aaac8" stop-opacity="0"/></radialGradient></defs><rect width="1600" height="900" fill="url(#ge)"/><rect width="1600" height="900" fill="url(#gf)"/>' + rings + '<circle cx="1180" cy="430" r="7" fill="#d4883a"/></svg>';
+  };
   var titleEl = null;
   function showTitle() {
     var p = counts();
@@ -274,8 +281,8 @@
     document.documentElement.style.overflow = "hidden";
     titleEl = document.createElement("div"); titleEl.className = "rrg-title"; titleEl.setAttribute("role", "dialog"); titleEl.setAttribute("aria-label", "Title screen");
     titleEl.innerHTML =
-      '<div class="rrg-title__art">' + (SEM === 1 ? ART.s1 : ART.s2()) + '</div><div class="rrg-title__shade"></div>' +
-      '<div class="rrg-title__body"><span class="rrg-title__sem">Semester ' + SEM + "</span><h1>Journal Development Project</h1><p>RR420 · Research &amp; Reflection · Armand</p>" +
+      '<div class="rrg-title__art">' + art(SEM) + '</div><div class="rrg-title__shade"></div>' +
+      '<div class="rrg-title__body"><span class="rrg-title__sem">' + RR.meta(SEM).short + "</span><h1>" + RR.meta(SEM).title + "</h1><p>RR420 · Research &amp; Reflection · Armand</p>" +
       '<p class="rrg-title__stat">' + (p.earned ? "Progress " + p.pct + "% · " + p.earned + " of " + p.total + " trophies" : "New game · " + p.total + " trophies to find") + "</p></div>" +
       '<button class="rrg-start" type="button">Press <b>&#10005;</b> or Enter to start</button><div class="rrg-title__esc">Esc &nbsp;Home screen</div>';
     document.body.appendChild(titleEl);
@@ -303,7 +310,7 @@
   }
   function renderMenu() {
     var p = counts(), html = "";
-    var head = '<div class="rrg-head"><small>Semester ' + SEM + '</small><h2>Journal Development Project</h2><div class="rrg-prog"><div><span>Progress</span><b>' + p.pct + '%</b></div><div><span>Earned</span><b>' + p.earned + "/" + p.total + '</b></div></div><div class="rrg-bar"><i style="width:' + p.pct + '%"></i></div><div class="rrg-counts">' + gradeRow(p) + "</div></div>";
+    var head = '<div class="rrg-head"><small>' + RR.meta(SEM).short + '</small><h2>' + RR.meta(SEM).title + '</h2><div class="rrg-prog"><div><span>Progress</span><b>' + p.pct + '%</b></div><div><span>Earned</span><b>' + p.earned + "/" + p.total + '</b></div></div><div class="rrg-bar"><i style="width:' + p.pct + '%"></i></div><div class="rrg-counts">' + gradeRow(p) + "</div></div>";
     if (menuView === "main") {
       html = head + '<div class="rrg-list">' +
         '<button class="rrg-item" data-act="resume">Resume</button>' +
@@ -439,7 +446,7 @@
     SEM = sem; KEY = "s" + sem; DEFS = RR.defs[KEY]; st = RR.load(KEY);
     if (!st.opened) st.opened = Date.now();
     save();
-    document.documentElement.style.setProperty("--rrg-accent", sem === 2 ? "var(--teal)" : "var(--amber)");
+    document.documentElement.style.setProperty("--rrg-accent", sem === 3 ? "var(--blue)" : sem === 2 ? "var(--teal)" : "var(--amber)");
     if (menuOpen) closeMenu();
     clearObservers();
     decorateWeeks(); decorateWall(); trackSections(); updateHUD();
@@ -451,7 +458,7 @@
   }
 
   function art(sem, prefix) {
-    var s = sem === 1 ? ART.s1 : ART.s2();
+    var s = sem === 1 ? ART.s1 : sem === 3 ? ART.s3() : ART.s2();
     return prefix ? s.replace(/id="(\w+)"/g, 'id="' + prefix + '$1"').replace(/url\(#(\w+)\)/g, "url(#" + prefix + "$1)") : s;
   }
 
@@ -459,5 +466,5 @@
     onRender: onRender, art: art, sfx: sfx, openMenu: openMenu, quit: goHome,
     busy: function () { return titleOpen || menuOpen; }
   };
-  if ($("#cover")) onRender(/[?&]sem=2/.test(location.search) ? 2 : 1);
+  if ($("#cover")) onRender(Number((/[?&]sem=([123])/.exec(location.search) || [0, 1])[1]));
 })();

@@ -145,7 +145,7 @@
     ui.hub.className = "rrp-hub rrp-ui"; ui.hub.setAttribute("role", "dialog"); ui.hub.setAttribute("aria-label", "Chapter select");
     ui.hub.innerHTML =
       '<div class="rrp-art" aria-hidden="true"></div><div class="rrp-shade" aria-hidden="true"></div>' +
-      '<div class="rrp-top"><div><small id="rrp-sem"></small><b>Journal Development Project</b></div><div class="rrp-top__r"><span id="rrp-tro"></span><time id="rrp-clock"></time></div></div>' +
+      '<div class="rrp-top"><div><small id="rrp-sem"></small><b id="rrp-name"></b></div><div class="rrp-top__r"><span id="rrp-tro"></span><time id="rrp-clock"></time></div></div>' +
       '<div class="rrp-row" id="rrp-row" role="listbox" aria-label="Chapters"></div>' +
       '<div class="rrp-info" aria-live="polite"><div class="rrp-info__k" id="rrp-k"></div><h1 id="rrp-title"></h1><p id="rrp-desc"></p>' +
       '<div class="rrp-info__stat"><span class="rrp-bar"><i id="rrp-bar"></i></span><span id="rrp-stat"></span></div>' +
@@ -228,7 +228,8 @@
   /* ---------- chapter select ---------- */
   function renderHub() {
     var p = RR.progress("s" + SEM);
-    $("#rrp-sem").textContent = "Semester " + SEM + " · Chapter select";
+    $("#rrp-sem").textContent = RR.meta(SEM).short + " · Chapter select";
+    $("#rrp-name").textContent = RR.meta(SEM).title;
     $("#rrp-tro").innerHTML = TROPHY + p.earned + " / " + p.total;
     $(".rrp-art", ui.hub).innerHTML = G().art ? G().art(SEM, "H") : "";
     var row = $("#rrp-row");
@@ -295,7 +296,7 @@
     var o = objective(c);
     ui.load.innerHTML =
       '<div class="rrp-art">' + (G().art ? G().art(SEM, "L") : "") + '</div><div class="rrp-shade"></div>' +
-      '<div class="rrp-load__body"><small>Semester ' + SEM + " · " + esc(c.kicker) + "</small><h2>" + esc(c.title) + "</h2><p>" + esc(c.desc) + "</p>" +
+      '<div class="rrp-load__body"><small>' + esc(RR.meta(SEM).short) + " · " + esc(c.kicker) + "</small><h2>" + esc(c.title) + "</h2><p>" + esc(c.desc) + "</p>" +
       '<p class="rrp-load__obj">' + (o.done ? "Chapter complete · " : "Objective · ") + esc(o.label) + "</p></div>" +
       '<div class="rrp-skip">Press any button to skip</div><div class="rrp-spin"><i></i>Loading</div>';
     ui.load.classList.add("on");
@@ -319,7 +320,7 @@
     ensureEnd(c);
     window.scrollTo({ top: 0, behavior: "instant" });
     ui.hud.hidden = false;
-    $("#rrp-hud-k").textContent = "Semester " + SEM + " · " + c.kicker;
+    $("#rrp-hud-k").textContent = RR.meta(SEM).short + " · " + c.kicker;
     $("#rrp-hud-t").textContent = c.title;
     $('[data-step="-1"]', ui.hud).disabled = i === 0;
     $('[data-step="1"]', ui.hud).disabled = i === chapters.length - 1;

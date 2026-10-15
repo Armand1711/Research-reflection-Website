@@ -41,8 +41,24 @@
       { id: "collect5", g: "bronze", name: "Collector", desc: "Collect five notes on the Gathering Wall.", n: 5 },
       { id: "sequel", g: "bronze", name: "Both Chapters", desc: "Open the Semester 1 journal." },
       { id: "cheat", g: "bronze", name: "Cheat Code", desc: "Enter the code. Some habits never die.", hidden: true }
+    ],
+    s3: [
+      { id: "platinum", g: "platinum", name: "The Whole Year", desc: "Earn every other trophy in the Research Report." },
+      { id: "map", g: "gold", name: "Cover to Cover", desc: "Read every chapter of the report." },
+      { id: "halfway", g: "silver", name: "Halfway Through", desc: "Read half of the chapters." },
+      { id: "start", g: "bronze", name: "Press Start", desc: "Start the report." },
+      { id: "refs", g: "bronze", name: "Show Your Sources", desc: "Read the references." },
+      { id: "cheat", g: "bronze", name: "Cheat Code", desc: "Enter the code. Some habits never die.", hidden: true }
     ]
   };
+
+  /* What each "game" is called on its title screen, chapter select, HUD and pause menu */
+  var META = {
+    s1: { short: "Semester 1", title: "Journal Development Project" },
+    s2: { short: "Semester 2", title: "Journal Development Project" },
+    s3: { short: "Year in review", title: "Research Report" }
+  };
+  function meta(sem) { return META["s" + sem] || META.s1; }
 
   /* Milestones from the year itself (shown on the home screen). state: done | progress | locked */
   var YEAR = [
@@ -79,5 +95,5 @@
     return { earned: n, total: t, pct: Math.round(n / t * 100), counts: c };
   }
 
-  window.RR = { defs: DEFS, year: YEAR, load: load, save: save, progress: progress, blank: blank, user: user, setUser: setUser };
+  window.RR = { defs: DEFS, year: YEAR, meta: meta, load: load, save: save, progress: progress, blank: blank, user: user, setUser: setUser };
 })();

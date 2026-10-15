@@ -26,7 +26,7 @@
       `<span class="tag-pill reveal"><i style="background:var(--${t.c})"></i>${esc(t.k)}: <b>${esc(t.v)}</b></span>`).join("");
     return `<section class="section cover" id="cover" data-screen-label="Cover">
       <span class="kicker reveal">${esc(c.kicker)}</span>
-      <h1 class="reveal rd1">Journal <span class="em">Development</span> Project</h1>
+      <h1 class="reveal rd1">${c.heading || 'Journal <span class="em">Development</span> Project'}</h1>
       <p class="author reveal rd2">${esc(c.author)}</p>
       <div class="cover__tags reveal rd2">${tags}</div>
       <p class="cover__intro reveal rd3">${esc(c.intro)}</p>
@@ -189,6 +189,48 @@
     </section>`;
   }
 
+  /* ================= RESEARCH REPORT ================= */
+  function rrFig(f, cls) {
+    return `<figure class="${cls || "rr-fig"} reveal"><img src="${esc(f.src)}" alt="${esc(f.alt || f.cap || "")}" loading="lazy" decoding="async">${f.cap ? `<figcaption>${esc(f.cap)}</figcaption>` : ""}</figure>`;
+  }
+  function rrBlock(b) {
+    switch (b.type) {
+      case "text":
+        return `<div class="rr-text">${b.paras.map((p) => `<p class="reveal">${esc(p)}</p>`).join("")}</div>`;
+      case "figure":
+        return rrFig(b, "rr-fig" + (b.wide ? " rr-fig--wide" : "") + (b.tall ? " rr-fig--tall" : ""));
+      case "gallery":
+        return `<div class="rr-gallery">${b.items.map((f) => rrFig(f)).join("")}</div>`;
+      case "quote":
+        return `<blockquote class="rr-quote reveal"><p>${esc(b.t)}</p><cite>${esc(b.a)}</cite></blockquote>`;
+      case "facts":
+        return `<dl class="rr-facts reveal">${b.items.map((i) => `<div><dt>${esc(i.k)}</dt><dd>${esc(i.v)}</dd></div>`).join("")}</dl>`;
+      case "reflect":
+        return `<aside class="rr-reflect reveal"><div class="rr-reflect__k">${esc(b.label || "Looking back")}</div>${b.paras.map((p) => `<p>${esc(p)}</p>`).join("")}</aside>`;
+      case "links":
+        return `<div class="rr-links reveal"><span class="rr-links__k">Connects to</span>${b.items.map((i) => `<span class="rr-chip"><b>${esc(i.k)}</b>${esc(i.v)}</span>`).join("")}</div>`;
+      case "timeline":
+        return `<ol class="rr-timeline reveal">${b.items.map((i) => `<li><span class="rr-tl__when">${esc(i.when)}</span><b>${esc(i.what)}</b><small>${esc(i.tag)}</small></li>`).join("")}</ol>`;
+      case "threads":
+        return `<div class="rr-threads">${b.items.map((i) => `<div class="rr-thread reveal"><span class="rr-thread__n">${esc(i.n)}</span><h3>${esc(i.t)}</h3><p>${esc(i.d)}</p><small>${esc(i.s)}</small></div>`).join("")}</div>`;
+      case "questions":
+        return `<div class="rr-qs">${b.items.map((i, k) => `<div class="rr-q reveal"><div class="rr-q__n">Manifesto question ${k + 1}</div><p class="rr-q__q">${esc(i.q)}</p><p class="rr-q__a">${esc(i.a)}</p></div>`).join("")}</div>`;
+    }
+    return "";
+  }
+  function rrChapter(ch) {
+    return `<section class="section rr-ch" id="${esc(ch.id)}" data-screen-label="${esc(ch.nav)}">
+      <header class="s-head"><span class="kicker">${esc(ch.kicker)}</span><h2>${ch.title}</h2>${ch.sub ? `<p class="s-sub">${esc(ch.sub)}</p>` : ""}</header>
+      <div class="rr-body">${ch.blocks.map(rrBlock).join("")}</div>
+    </section>`;
+  }
+  function rrRefs(refs) {   // entries are trusted markup from content3.js (italics for titles)
+    return `<section class="section rr-ch" id="refs" data-screen-label="References">
+      <header class="s-head"><span class="kicker">References</span><h2>Sources</h2><p class="s-sub">Every source cited in this report, in APA 7th edition.</p></header>
+      <ol class="rr-refs">${refs.map((r) => `<li class="reveal">${r}</li>`).join("")}</ol>
+    </section>`;
+  }
+
   /* ================= NAV ================= */
   const NAV_S1 = [
     { id: "cover", label: "Cover", icon: "cover" },
@@ -207,7 +249,13 @@
     { id: "report", label: "Research Report — Progress", icon: "work" },
     { id: "wall", label: "Gathering Wall", icon: "wall" },
   ];
-  function currentNav() { return SEM === 2 ? NAV_S2 : NAV_S1; }
+  function navS3() {
+    const r = window.REPORT || { chapters: [] };
+    return [{ id: "cover", label: "Prologue", icon: "cover" }]
+      .concat(r.chapters.map((c) => ({ id: c.id, label: c.nav, icon: c.icon || "work" })))
+      .concat([{ id: "refs", label: "References", icon: "brief" }]);
+  }
+  function currentNav() { return SEM === 3 ? navS3() : SEM === 2 ? NAV_S2 : NAV_S1; }
   function navHTML() {
     const btns = currentNav().map((n) =>
       `<button class="nav__btn" data-target="${n.id}" aria-label="${esc(n.label)}">
@@ -223,6 +271,7 @@
       <div class="sem-switch">
         <button class="sem-btn ${SEM === 1 ? "active" : ""}" data-sem="1">S1</button>
         <button class="sem-btn ${SEM === 2 ? "active" : ""}" data-sem="2">S2</button>
+        <button class="sem-btn ${SEM === 3 ? "active" : ""}" data-sem="3" title="Research Report">RR</button>
       </div>
     </nav>`;
   }
@@ -230,12 +279,18 @@
   /* ================= MOUNT ================= */
   function render(sem) {
     SEM = sem || SEM;
-    const data = SEM === 2 ? window.JOURNAL2 : window.JOURNAL;
+    const data = SEM === 3 ? window.REPORT : SEM === 2 ? window.JOURNAL2 : window.JOURNAL;
     const oldNav = $(".nav");
     if (oldNav) oldNav.remove();
     document.body.insertAdjacentHTML("afterbegin", navHTML());
     const app = $("#app");
-    if (SEM === 2) {
+    document.body.classList.toggle("is-report", SEM === 3);
+    if (SEM === 3) {
+      app.innerHTML =
+        cover(data.cover) + data.chapters.map(rrChapter).join("") + rrRefs(data.references) +
+        `<footer class="foot"><div class="fm reveal">Places, not pages.</div>
+         <div class="fmeta reveal rd1"><span>RR420 · Research Report</span><span>Postgraduate Diploma in Creative Practice</span><span>Open Window · 2026</span></div></footer>`;
+    } else if (SEM === 2) {
       app.innerHTML =
         cover(data.cover, "s2-") + brief(data.brief, "02") +
         weeks(data.weeks, "03", "Six of the eight available weeks so far. Week 04 has no recording available.", "s2-") +
@@ -360,6 +415,7 @@
 
   function setupWall() {
     const grid = $("#wallGrid");
+    if (!grid) return;
     const notes = $$(".note", grid);
     $$(".wall-filter").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -382,7 +438,7 @@
     update();
   }
 
-  const start = () => render(new URLSearchParams(location.search).get("sem") === "2" ? 2 : 1);
+  const start = () => render(Math.min(3, Math.max(1, Number(new URLSearchParams(location.search).get("sem")) || 1)));
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
 })();
